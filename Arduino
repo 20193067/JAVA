@@ -1,0 +1,537 @@
+
+[트랙1]
+
+int A_AC = 11; // R Motor
+int A_BD = 3;
+#define A_EN 7 // R PWM
+int B_AC = 5; // L Motor
+int B_BD = 6;
+#define B_EN 8 // L PWM
+int R; //right sensor
+int L; //left sensor
+int st = 0; //교차로 카운터
+#define speed 18
+
+void setup()
+{
+  Serial.begin(9600);
+  pinMode(A_AC, OUTPUT);
+  pinMode(A_BD, OUTPUT);
+  pinMode(B_AC, OUTPUT);
+  pinMode(B_BD, OUTPUT);
+  pinMode(A_EN, INPUT);
+  pinMode(B_EN, INPUT);
+}
+
+void loop()
+{
+  L = digitalRead(A_EN);
+  R = digitalRead(B_EN);
+  Serial.print(R);
+  Serial.print(" : ");
+  Serial.println(L);
+
+  if (R == 0  && L == 0  )
+  {
+    Serial.println("직진");
+    forward();
+  }
+  else if ( R == 1  &&  L == 0 )
+  {
+    Serial.println("오른쪽 턴");
+    R_turn();
+  }
+  else if (R == 0 && L == 1)
+  {
+    Serial.println("왼쪽 턴");
+    L_turn();
+  }
+  else if (R == 1 && L == 1) {
+    if ( st != 2){
+      st += 1;
+      Stop_spin();
+      delay(400);
+      forward();
+      delay(400);
+    }
+    else if (st >= 2) {
+      while (true) {
+        Stop_spin();
+      }
+    }
+    delay(5);
+  }
+}
+
+void forward()
+{
+  digitalWrite(A_AC, HIGH);
+  analogWrite(A_BD, speed);
+  digitalWrite(B_AC, HIGH);
+  analogWrite(B_BD, speed);
+  delay(30);
+}
+
+void R_turn()
+{
+  digitalWrite(A_EN, LOW); 
+  digitalWrite(B_EN, LOW); 
+  digitalWrite(A_AC, HIGH);
+  analogWrite(A_BD, speed-2);
+  analogWrite(B_AC, speed-5);
+  digitalWrite(B_BD, HIGH);
+  delay(30);
+}
+
+void L_turn()
+{
+  digitalWrite(A_EN, LOW); 
+  digitalWrite(B_EN, LOW); 
+  analogWrite(A_AC, speed-5);
+  digitalWrite(A_BD, HIGH);
+  digitalWrite(B_AC, HIGH);
+  analogWrite(B_BD, speed-2);
+  delay(10);
+}
+
+void Stop_spin()
+{
+  digitalWrite(A_EN, LOW); 
+  digitalWrite(B_EN, LOW); 
+  digitalWrite(A_AC, LOW); 
+  digitalWrite(A_BD, LOW);
+  digitalWrite(B_AC, LOW); 
+  digitalWrite(B_BD, LOW);
+  digitalWrite(A_EN, HIGH);
+  digitalWrite(B_EN, HIGH);
+}
+
+[트랙2]
+
+int A_AC = 11; // R Motor
+int A_BD = 3;
+#define A_EN 7 // R PWM
+int B_AC = 5; // L Motor
+int B_BD = 6;
+#define B_EN 8 // L PWM
+int R; //right sensor
+int L; //left sensor
+int st = 0; //교차로 카운터
+#define speed 20
+
+void setup()
+{
+  Serial.begin(9600);
+  pinMode(A_AC, OUTPUT);
+  pinMode(A_BD, OUTPUT);
+  pinMode(B_AC, OUTPUT);
+  pinMode(B_BD, OUTPUT);
+  pinMode(A_EN, INPUT);
+  pinMode(B_EN, INPUT);
+}
+
+void loop()
+{
+  L = digitalRead(A_EN);
+  R = digitalRead(B_EN);
+  Serial.print(R);
+  Serial.print(" : ");
+  Serial.println(L);
+
+  if (R == 0  && L == 0  )
+  {
+    Serial.println("직진");
+    forward();
+  }
+  else if ( R == 1  &&  L == 0 )
+  {
+    Serial.println("오른쪽 턴");
+    R_turn();
+  }
+  else if (R == 0 && L == 1)
+  {
+    Serial.println("왼쪽 턴");
+    L_turn();
+  }
+  else if (R == 1 && L == 1) {
+    if (st != 3)
+    {
+      st += 1;
+      Stop_spin();
+      delay(300);
+      forward();
+      delay(300);
+    }
+    else if (st >= 3) {
+      while (true) {
+        Stop_spin();
+      }
+    }
+    delay(5);
+  }
+}
+
+void forward()
+{
+  digitalWrite(A_AC, HIGH);
+  analogWrite(A_BD, speed);
+  digitalWrite(B_AC, HIGH);
+  analogWrite(B_BD, speed);
+  delay(30);
+}
+
+void R_turn()
+{
+  digitalWrite(A_EN, LOW);
+  digitalWrite(B_EN, LOW);
+  digitalWrite(A_AC, HIGH);
+  analogWrite(A_BD, speed-2);
+  analogWrite(B_AC, speed-5);
+  digitalWrite(B_BD, HIGH);
+  delay(30);
+}
+
+void L_turn()
+{
+  digitalWrite(A_EN, LOW); 
+  digitalWrite(B_EN, LOW); 
+  analogWrite(A_AC, speed-5);
+  digitalWrite(A_BD, HIGH);
+  digitalWrite(B_AC, HIGH);
+  analogWrite(B_BD, speed-2);
+  delay(10);
+}
+
+void Stop_spin()
+{
+  digitalWrite(A_EN, LOW);
+  digitalWrite(B_EN, LOW); 
+  digitalWrite(A_AC, LOW);   
+  digitalWrite(A_BD, LOW);
+  digitalWrite(B_AC, LOW); 
+  digitalWrite(B_BD, LOW);
+  digitalWrite(A_EN, HIGH);
+  digitalWrite(B_EN, HIGH);
+}
+
+
+[트랙3]
+
+int A_AC = 11; // R Motor
+int A_BD = 3;
+#define A_EN 7 // R PWM
+int B_AC = 5; // L Motor
+int B_BD = 6;
+#define B_EN 8 // L PWM
+int R; //right sensor
+int L; //left sensor
+int st = 0; //교차로 카운트
+#define speed 10
+
+void setup()
+{
+  Serial.begin(9600);
+  pinMode(A_AC, OUTPUT);
+  pinMode(A_BD, OUTPUT);
+  pinMode(B_AC, OUTPUT);
+  pinMode(B_BD, OUTPUT);
+  pinMode(A_EN, INPUT);
+  pinMode(B_EN, INPUT);
+}
+
+void loop()
+{
+  L = digitalRead(A_EN);
+  R = digitalRead(B_EN);
+  Serial.print(R);
+  Serial.print(" : ");
+  Serial.println(L);
+
+  if (R == 0  && L == 0  )
+  {
+    Serial.println("직진");
+    forward();
+  }
+  else if ( R == 1  &&  L == 0 )
+  {
+    Serial.println("오른쪽 턴");
+    R_turn();
+  }
+  else if (R == 0 && L == 1)
+  {
+    Serial.println("왼쪽 턴");
+    L_turn();
+  }
+  else if (R == 1 && L == 1) {
+    if ( st != 4){
+      st += 1;
+      Stop_spin();
+      delay(400);
+      forward();
+      delay(400);
+    }
+    else if (st >= 4) {
+      while (true) {
+        Stop_spin();
+      }
+    }
+    delay(5);
+  }
+}
+
+void forward()
+{
+  digitalWrite(A_AC, HIGH);
+  analogWrite(A_BD, speed);
+  digitalWrite(B_AC, HIGH);
+  analogWrite(B_BD, speed);
+  delay(30);
+}
+
+void R_turn()
+{
+  digitalWrite(A_EN, LOW);
+  digitalWrite(B_EN, LOW);
+  digitalWrite(A_AC, HIGH);
+  analogWrite(A_BD, speed-2);
+  analogWrite(B_AC, speed-5);
+  digitalWrite(B_BD, HIGH);
+  delay(30);
+}
+
+void L_turn()
+{
+  digitalWrite(A_EN, LOW);
+  digitalWrite(B_EN, LOW);
+  analogWrite(A_AC, speed-5);
+  digitalWrite(A_BD, HIGH);
+  digitalWrite(B_AC, HIGH);
+  analogWrite(B_BD, speed-2);
+  delay(10);
+}
+
+void Stop_spin()
+{
+  digitalWrite(A_EN, LOW);
+  digitalWrite(B_EN, LOW); 
+  digitalWrite(A_AC, LOW); 
+  digitalWrite(A_BD, LOW);
+  digitalWrite(B_AC, LOW);
+  digitalWrite(B_BD, LOW);
+  digitalWrite(A_EN, HIGH);
+  digitalWrite(B_EN, HIGH);
+}
+
+[트랙4]
+
+int A_AC = 11; // R Motor
+int A_BD = 3;
+#define A_EN 7 // R PWM
+int B_AC = 5; // L Motor
+int B_BD = 6;
+#define B_EN 8 // L PWM
+int R; //right sensor
+int L; //left sensor
+int st = 0; //교차로 카운트
+#define speed 60
+
+void setup()
+{
+  Serial.begin(9600);
+  pinMode(A_AC, OUTPUT);
+  pinMode(A_BD, OUTPUT);
+  pinMode(B_AC, OUTPUT);
+  pinMode(B_BD, OUTPUT);
+  pinMode(A_EN, INPUT);
+  pinMode(B_EN, INPUT);
+}
+
+void loop()
+{
+  L = digitalRead(A_EN);
+  R = digitalRead(B_EN);
+  Serial.print(R);
+  Serial.print(" : ");
+  Serial.println(L);
+
+  if (R == 0  && L == 0  )
+  {
+    Serial.println("직진");
+    forward();
+  }
+  else if ( R == 1  &&  L == 0 )
+  {
+    Serial.println("오른쪽 턴");
+    R_turn();
+  }
+  else if (R == 0 && L == 1)
+  {
+    Serial.println("왼쪽 턴");
+    L_turn();
+  }
+  else if (R == 1 && L == 1) {
+    if ( st != 6){
+      st += 1;
+      Stop_spin();
+      delay(150);
+      forward();
+      delay(150);
+    }
+    else if (st >= 6) {
+      while (true) {
+        Stop_spin();
+      }
+    }
+    delay(5);
+  }
+}
+
+void forward()
+{
+  digitalWrite(A_AC, HIGH);
+  analogWrite(A_BD, speed);
+  digitalWrite(B_AC, HIGH);
+  analogWrite(B_BD, speed);
+  delay(30);
+}
+
+void R_turn()
+{
+  digitalWrite(A_EN, LOW);
+  digitalWrite(B_EN, LOW);
+  digitalWrite(A_AC, HIGH);
+  analogWrite(A_BD, speed-5);
+  analogWrite(B_AC, speed-10);
+  digitalWrite(B_BD, HIGH);
+  delay(30);
+}
+
+void L_turn()
+{
+  digitalWrite(A_EN, LOW);
+  digitalWrite(B_EN, LOW);
+  analogWrite(A_AC, speed-10);
+  digitalWrite(A_BD, HIGH);
+  digitalWrite(B_AC, HIGH);
+  analogWrite(B_BD, speed-5);
+  delay(10);
+}
+
+void Stop_spin()
+{
+  digitalWrite(A_EN, LOW);
+  digitalWrite(B_EN, LOW);
+  digitalWrite(A_AC, LOW);  
+  digitalWrite(A_BD, LOW);
+  digitalWrite(B_AC, LOW);
+  digitalWrite(B_BD, LOW);
+  digitalWrite(A_EN, HIGH);
+  digitalWrite(B_EN, HIGH);
+}
+
+[트랙5]
+
+int A_AC = 11; // R Motor
+int A_BD = 3;
+#define A_EN 7 // R PWM
+int B_AC = 5; // L Motor
+int B_BD = 6;
+#define B_EN 8 // L PWM
+int R; //right sensor 
+int L; //left sensot
+int st = 0; //교차로 카운트
+#define speed 10 //스피드
+
+void setup()
+{
+  Serial.begin(9600);
+  pinMode(A_AC, OUTPUT);
+  pinMode(A_BD, OUTPUT);
+  pinMode(B_AC, OUTPUT);
+  pinMode(B_BD, OUTPUT);
+  pinMode(A_EN, INPUT);
+  pinMode(B_EN, INPUT);
+}
+
+void loop()
+{
+  L = digitalRead(A_EN);
+  R = digitalRead(B_EN);
+  Serial.print(R);
+  Serial.print(" : ");
+  Serial.println(L);
+
+  if (R == 0  && L == 0  )
+  {
+    Serial.println("직진");
+    forward();
+  }
+  else if ( R == 1  &&  L == 0 )
+  {
+    Serial.println("오른쪽 턴");
+    R_turn();
+  }
+  else if (R == 0 && L == 1)
+  {
+    Serial.println("왼쪽 턴");
+    L_turn();
+  }
+  else if (R == 1 && L == 1) {
+    if ( st != 1){
+      st += 1;
+      Stop_spin();
+      delay(400);
+      forward();
+      delay(400);
+    }
+    else if (st >= 1) {
+      while (true) {
+        Stop_spin();
+      }
+    }
+    delay(5);
+  }
+}
+
+void forward()
+{
+  digitalWrite(A_AC, HIGH);
+  analogWrite(A_BD, speed);
+  digitalWrite(B_AC, HIGH);
+  analogWrite(B_BD, speed);
+  delay(30);
+}
+
+void R_turn()
+{
+  digitalWrite(A_EN, LOW);
+  digitalWrite(B_EN, LOW);
+  digitalWrite(A_AC, HIGH);
+  analogWrite(A_BD, speed-5);
+  analogWrite(B_AC, speed-7);
+  digitalWrite(B_BD, HIGH);
+  delay(30);
+}
+
+void L_turn()
+{
+  digitalWrite(A_EN, LOW);
+  digitalWrite(B_EN, LOW);
+  analogWrite(A_AC, speed-7);
+  digitalWrite(A_BD, HIGH);
+  digitalWrite(B_AC, HIGH);
+  analogWrite(B_BD, speed-5);
+  delay(10);
+}
+
+void Stop_spin()
+{
+  digitalWrite(A_EN, LOW);
+  digitalWrite(B_EN, LOW);
+  digitalWrite(A_AC, LOW);    
+  digitalWrite(A_BD, LOW);
+  digitalWrite(B_AC, LOW); 
+  digitalWrite(B_BD, LOW);
+  digitalWrite(A_EN, HIGH);
+  digitalWrite(B_EN, HIGH);
+}
