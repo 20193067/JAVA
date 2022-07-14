@@ -1,0 +1,774 @@
+package 가계부;
+
+import java.awt.event.ItemListener;
+import java.sql.*;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.util.Calendar;
+
+public class DBConnection {
+	private static Connection con;
+	private static Statement st;
+	private static ResultSet rs;
+	private static PreparedStatement pstmt;
+	String[][] tempdata;
+	String[] data;
+	public DBConnection() {
+		try {
+			Class.forName("com.mysql.cj.jdbc.Driver");
+			con = DriverManager.getConnection("jdbc:mysql://localhost:3306/user_money", "root", "1234");
+			System.out.println("[ MySQL Connection ]\n");
+			st = con.createStatement();
+
+		} catch (Exception e) {
+			System.out.println("데이터 베이스 연결 오류 " + e.getMessage());
+		}
+
+	}
+
+	// 수입 삽입문(기존 삽입문이랑 비교해서 수정됨!) DB_INCOMEisnert(시간,돈,카테고리,가계부번호)
+	public void DB_INCOMEinsert(String time, String money, String category, String housenum) {
+		String query = "SELECT INNUM FROM INCOME ORDER BY INNUM  DESC LIMIT 1";
+		int innum = 0;
+		try {
+			pstmt = con.prepareStatement(query);
+			rs = pstmt.executeQuery();
+			if (rs.next()) {
+				innum = Integer.parseInt(rs.getString(1));
+				innum++;
+			}
+		} catch (SQLException e) {
+			System.out.println("최대 innum가져오기 오류");
+		}
+
+		query = "insert into INCOME values(167972,?,?,?,?,?)";// unum고정
+		try {
+			pstmt = con.prepareStatement(query);
+			pstmt.setInt(1, innum);
+			pstmt.setDate(2, java.sql.Date.valueOf(time));
+			pstmt.setInt(3, Integer.parseInt(money));
+			pstmt.setString(4, category);
+			pstmt.setInt(5, Integer.parseInt(housenum));
+			pstmt.executeUpdate();
+		} catch (SQLException e) {
+			System.out.println("수입 삽입 오류" + e.getMessage());
+		}
+
+	}
+
+	// 수입 추가 잘 들어갔는지 확인출력문
+	public void DBincometest() {
+
+		String sql;
+		sql = "SELECT * FROM INCOME";
+		try {
+			rs = st.executeQuery(sql);
+
+			while (rs.next()) {
+				String number = rs.getString(1);
+				String innum = rs.getString(2);
+				String inday = rs.getString(3);
+				String inmoney = rs.getString(4);
+				String category = rs.getString(5);
+				String hnum = rs.getString(6);
+				System.out.println("UNUM : " + number + ", INNUM : " + innum + " ,INDAY : " + inday + " ,inmoney : "
+						+ inmoney + " ,category : " + category + " ,HNUM : " + hnum);
+
+			}
+		} catch (SQLException e) {
+			System.out.println("수입 출력 오류" + e.getMessage());
+		}
+
+	}
+
+	// 지출 삽입문(기존 삽입문과 다름 수정된 삽입문)
+	public void DB_SPENDinsert(String time, String money, String category, String s_type, String housenum,
+			String detail) {
+		String query = "SELECT SNUM FROM SPEND ORDER BY SNUM  DESC LIMIT 1";
+		int snum = 0;
+		try {
+			pstmt = con.prepareStatement(query);
+			rs = pstmt.executeQuery();
+			if (rs.next()) {
+				snum = Integer.parseInt(rs.getString(1));
+				snum++;
+			}
+		} catch (SQLException e) {
+			System.out.println("최대(마지막) snum가져오기 오류");
+		}
+
+		query = "insert into SPEND values(167972,?,?,?,?,?,?,?)";
+		try {
+			pstmt = con.prepareStatement(query);
+			pstmt.setInt(1, snum);
+			pstmt.setDate(2, java.sql.Date.valueOf(time));
+			pstmt.setInt(3, Integer.parseInt(money));
+			pstmt.setString(4, category);
+			pstmt.setString(5, s_type);
+			pstmt.setInt(6, Integer.parseInt(housenum));
+			pstmt.setString(7, detail);
+			pstmt.executeUpdate();
+		} catch (SQLException e) {
+			System.out.println("지출 삽입 오류" + e.getMessage());
+		}
+
+	}
+
+	// 이벤트 삽입문
+	public void DB_EVENTinsert(String UNUM, String eventnum, String time, String category, String money,
+			boolean birth) {
+
+		String query = "insert into EVENT values(?,?,?,?,?,?)";
+		try {
+			pstmt = con.prepareStatement(query);
+			pstmt.setInt(1, Integer.parseInt(UNUM));
+			pstmt.setInt(2, Integer.parseInt(eventnum));
+			pstmt.setDate(3, java.sql.Date.valueOf(time));
+			pstmt.setString(4, category);
+			pstmt.setInt(5, Integer.parseInt(money));
+			pstmt.setBoolean(6, birth);
+			pstmt.executeUpdate();
+		} catch (SQLException e) {
+			System.out.println("이벤트 삽입 오류" + e.getMessage());
+		}
+
+	}
+
+	// db알바 insert수정(처음 입력할때 addTime과 Nighttime은 존재하지 않으므로 임의로 넣어줌.)
+	public void DB_PARTTIMEinsert(String pname, String money, String starttime, String endtime, String date,
+			boolean[] b) {
+		String t = "00:00:00";
+		String query = "SELECT PNUM FROM PARTTIME ORDER BY PNUM  DESC LIMIT 1";
+		int pnum = 0;
+		try {
+			pstmt = con.prepareStatement(query);
+			rs = pstmt.executeQuery();
+			if (rs.next()) {
+				pnum = Integer.parseInt(rs.getString(1));
+				pnum++;
+			}
+		} catch (SQLException e) {
+			System.out.println("최대(마지막) pnum가져오기 오류(db알바 insert) " + e.getMessage());
+		}
+		System.out.print(pnum);
+		query = "insert into PARTTIME values(167972,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+		try {
+			pstmt = con.prepareStatement(query);
+			pstmt.setInt(1, pnum);
+			pstmt.setString(2, pname);
+			pstmt.setInt(3, Integer.parseInt(money));
+			pstmt.setTime(4, Time.valueOf(starttime));
+			pstmt.setTime(5, Time.valueOf(endtime));
+			pstmt.setTime(6, Time.valueOf(t));
+			pstmt.setTime(7, Time.valueOf(t));
+			pstmt.setDate(8, java.sql.Date.valueOf(date));
+			pstmt.setBoolean(9, b[0]);
+			pstmt.setBoolean(10, b[1]);
+			pstmt.setBoolean(11, b[2]);
+			pstmt.setBoolean(12, b[3]);
+			pstmt.setBoolean(13, b[4]);
+			pstmt.setBoolean(14, b[5]);
+			pstmt.setBoolean(15, b[6]);
+			pstmt.executeUpdate();
+		} catch (SQLException e) {
+			System.out.println("알바 삽입 오류" + e.getMessage());
+		}
+
+	}
+
+	// db연결 종료시 호출
+	public static void end() {
+		try {
+			con.close();
+			st.close();
+			pstmt.close();
+		} catch (SQLException e) {
+
+			e.printStackTrace();
+		}
+
+	}
+
+	// 고정지출 삭제시 사용 메소드
+	public static void deletespend(String day, String category, String money) {
+		String query = "delete from event where EVENTDAY=? and category=? and emoney = ? and birth=false";
+		try {
+			pstmt = con.prepareStatement(query);
+			pstmt.setDate(1, java.sql.Date.valueOf(day));
+			pstmt.setString(2, category);
+			pstmt.setInt(3, Integer.parseInt(money));
+			pstmt.executeUpdate();
+		} catch (SQLException e) {
+			System.out.println("고정지출 삭제 오류" + e.getMessage());
+		}
+	}
+
+	// 지출 날에 따라 검색해서 String2차원 배열 리턴
+	public String[][] Ssearch(String day) {
+		tempdata = null;
+		String query = "SELECT spend.CATEGORY, spend.SMONEY FROM spend where sday=?";
+		try {
+			pstmt = con.prepareStatement(query);
+			pstmt.setDate(1, Date.valueOf(day));
+			rs = pstmt.executeQuery();
+			int count = 0;
+			while (rs.next()) {
+				count++;
+			}
+			if (count == 0) {
+				tempdata = new String[1][3];
+				tempdata[0][0] = "X";
+				tempdata[0][1] = "X";
+				tempdata[0][2] = "X";
+			} else {
+				tempdata = new String[count][3];
+				rs = pstmt.executeQuery();
+				count = 0;
+
+				while (rs.next()) {
+					tempdata[count][0] = "지출";
+					tempdata[count][1] = rs.getString(1);
+					tempdata[count][2] = rs.getString(2);
+					count++;
+				}
+			}
+
+		} catch (SQLException e) {
+			System.out.println("spend 검색 오류" + e.getMessage());
+		}
+
+		return tempdata;
+
+	}
+
+	// 수입 search
+	public String[][] Isearch(String day) {
+		tempdata = null;// 초기화 작업
+		String query = "select income.CATEGORY,income.inmoney from income where inday=?";
+		try {
+			pstmt = con.prepareStatement(query);
+			pstmt.setDate(1, Date.valueOf(day));
+			rs = pstmt.executeQuery();
+			int count = 0;
+			while (rs.next()) {
+				count++;
+			}
+			if (count == 0) {
+				tempdata = new String[1][3];
+				tempdata[0][0] = "X";
+				tempdata[0][1] = "X";
+				tempdata[0][2] = "X";
+			} else {
+				tempdata = new String[count][3];
+				rs = pstmt.executeQuery();
+				count = 0;
+				while (rs.next()) {
+					tempdata[count][0] = "수입";
+					tempdata[count][1] = rs.getString(1);
+					tempdata[count][2] = rs.getString(2);
+					count++;
+				}
+			}
+		} catch (SQLException e) {
+			System.out.println("수입 검색 오류" + e.getMessage());
+		}
+		return tempdata;
+
+	}
+
+	// 주은
+	// 총자산(유저넘버, 가계부넘버)
+	public int Total(int usernum, int holdnum) {
+		String query = "select HOUSEHOLD.MONEY from HOUSEHOLD where HOLDNUM = ? AND HOUSEHOLD.Unum= ?";
+		int total = 0;
+		try {
+			pstmt = con.prepareStatement(query);
+			pstmt.setInt(1, holdnum);
+			pstmt.setInt(2, usernum);
+			rs = pstmt.executeQuery();
+			if (rs.next()) {
+				total = Integer.parseInt(rs.getString(1));
+			}
+		} catch (SQLException e) {
+			System.out.println("total 검색 오류" + e.getMessage());
+		}
+		return total;
+	}
+
+	// 오늘의 알림 (해당항목의 세번째 사항은 생일 판단 유무. 생일이면 1 아니면 0으로 저장되어있음)
+	public String[][] todayevent(LocalDate day) {
+		tempdata = null;// 초기화
+		String query = "select event.category, event.emoney,event.birth from event where event.eventday = ?";
+		try {
+			pstmt = con.prepareStatement(query);
+			pstmt.setDate(1, Date.valueOf(day));
+			rs = pstmt.executeQuery();
+			int count = 0;
+			while (rs.next()) {
+				count++;
+			}
+			tempdata = new String[count][3];
+			rs = pstmt.executeQuery();
+			count = 0;
+			while (rs.next()) {
+				tempdata[count][0] = rs.getString(1);// 카테고리
+				tempdata[count][1] = rs.getString(2);// 돈
+				tempdata[count][2] = rs.getString(3);// 생일 유무
+				count++;
+			}
+		} catch (SQLException e) {
+			System.out.println("오늘의 알림 검색 오류" + e.getMessage());
+		}
+		return tempdata;
+	}
+
+	// 아연
+	// 고정지출 insert(날짜,항목,금액)
+	public void Eventinsert(String day, String category, int money) {
+		String query = "SELECT eventnum FROM event ORDER BY eventnum  DESC LIMIT 1";
+		int eventnumber = 0;
+		try {
+			pstmt = con.prepareStatement(query);
+			rs = pstmt.executeQuery();
+			if (rs.next()) {
+				eventnumber = Integer.parseInt(rs.getString(1));
+			}
+		} catch (SQLException e) {
+			System.out.println("고정지출 enum확인 오류" + e.getMessage());
+		}
+		eventnumber++;
+		query = "INSERT INTO EVENT VALUES(167972,?,?,?,?,false)";
+		try {
+			pstmt = con.prepareStatement(query);
+			pstmt.setInt(1, eventnumber);
+			pstmt.setDate(2, Date.valueOf(day));
+			pstmt.setString(3, category);
+			pstmt.setInt(4, money);
+			pstmt.executeUpdate();
+		} catch (SQLException e) {
+			System.out.println("고정지출 insert 오류" + e.getMessage());
+		}
+
+	}
+
+	// 나영 (모두 String형이므로 더하거나 계산시 parse하세욤/각 날짜,카테고리,돈 순서로 삽입됩니다.
+	public String[][] spendread() {
+		tempdata = null;
+		String query = "select sday,spend.category,smoney from spend where unum=167972";
+		try {
+			pstmt = con.prepareStatement(query);
+			rs = pstmt.executeQuery();
+			int count = 0;
+			while (rs.next()) {
+				count++;
+			}
+			tempdata = new String[count][3];
+			rs = pstmt.executeQuery();
+			count = 0;
+			while (rs.next()) {
+				tempdata[count][0] = rs.getString(1);// day
+				tempdata[count][1] = rs.getString(2);// category
+				tempdata[count][2] = rs.getString(3);// money
+				count++;
+			}
+
+		} catch (SQLException e) {
+			System.out.println("spendread 오류" + e.getMessage());
+		}
+		return tempdata;
+	}
+
+	// 생일 insert
+	public void birthinsert(String day, String name, String emoney) {
+		String query = "SELECT eventnum FROM event ORDER BY eventnum  DESC LIMIT 1";
+		int eventnumber = 0;
+		try {
+			pstmt = con.prepareStatement(query);
+			rs = pstmt.executeQuery();
+			if (rs.next()) {
+				eventnumber = Integer.parseInt(rs.getString(1));
+			}
+		} catch (SQLException e) {
+			System.out.println("생일 enum확인 오류" + e.getMessage());
+		}
+		eventnumber++;
+		query = "insert into event values(167972,?,?,?,?,true)";
+		try {
+			pstmt = con.prepareStatement(query);
+			pstmt.setInt(1, eventnumber);
+			pstmt.setDate(2, Date.valueOf(day));
+			pstmt.setString(3, name);
+			pstmt.setInt(4, Integer.parseInt(emoney));
+			pstmt.executeUpdate();
+		} catch (SQLException e) {
+			System.out.println("생일 insert 오류" + e.getMessage());
+		}
+	}
+
+	public String[][] birthread(int month) {
+		tempdata = null;
+		String query = "select eventday,category,emoney from event where birth=true and MONTH(eventday)=?;";
+		try {
+			pstmt = con.prepareStatement(query);
+			pstmt.setString(1, Integer.toString(month));
+			rs = pstmt.executeQuery();
+			int count = 0;
+			while (rs.next()) {
+				count++;
+			}
+			tempdata = new String[count][3];
+			rs = pstmt.executeQuery();
+			count = 0;
+			while (rs.next()) {
+				tempdata[count][0] = rs.getString(1);// day
+				tempdata[count][1] = rs.getString(2);// category
+				tempdata[count][2] = rs.getString(3);// money
+				count++;
+			}
+
+		} catch (SQLException e) {
+			System.out.println("birthread 오류 " + e.getMessage());
+		}
+		return tempdata;
+	}
+
+	public void birthdelete(String eventday, String category, String emoney) {
+
+		String query = "delete from event where EVENTDAY=? and category=? and emoney = ? and birth=true";
+		try {
+			pstmt = con.prepareStatement(query);
+			pstmt.setDate(1, Date.valueOf(eventday));
+			pstmt.setString(2, category);
+			pstmt.setInt(3, Integer.parseInt(emoney));
+			pstmt.executeUpdate();
+		} catch (SQLException e) {
+			System.out.println("birthdelete 오류 " + e.getMessage());
+		}
+	}
+
+	// 생일 수정
+	// 날짜, 이름, 금액 순서(a가 원래꺼, b가 수정된거)
+	public void birthupdate(String a[], String b[]) {
+		String query = "update event set event.EVENTDAY =?, event.category =?,event.emoney=? where event.eventday = ? and event.category = ? and emoney = ?;";
+		try {
+			pstmt = con.prepareStatement(query);
+			pstmt.setDate(1, Date.valueOf(b[0]));
+			pstmt.setString(2, b[1]);
+			pstmt.setInt(3, Integer.parseInt(b[2]));
+			pstmt.setDate(4, Date.valueOf(a[0]));
+			pstmt.setString(5, a[1]);
+			pstmt.setInt(6, Integer.parseInt(a[2]));
+			pstmt.executeUpdate();
+		} catch (SQLException e) {
+			System.out.println("birthupdate 오류 " + e.getMessage());
+		}
+	}
+
+	public String[][] Eread() {
+		String query = "select eventday, category, emoney from event where birth=false";
+		try {
+			pstmt = con.prepareStatement(query);
+			rs = pstmt.executeQuery();
+			int count = 0;
+			while (rs.next()) {
+				count++;
+			}
+			tempdata = new String[count][3];
+			rs = pstmt.executeQuery();
+			count = 0;
+			while (rs.next()) {
+				tempdata[count][0] = rs.getString(1);// 날짜
+				tempdata[count][1] = rs.getString(2);// 항목
+				tempdata[count][2] = rs.getString(3);// 금액
+				count++;
+			}
+		} catch (SQLException e) {
+			System.out.println("고정지출 read 오류" + e.getMessage());
+		}
+		return tempdata;
+	}
+
+	public String[][] spendreadweek(String week) {
+		tempdata = null;
+		Calendar cal = Calendar.getInstance();
+		int year = cal.get(Calendar.YEAR);
+		int month = cal.get(Calendar.MONTH) + 1;
+		int day = cal.get(Calendar.DAY_OF_MONTH);
+//        String today="Today is " + year + "-" + month + "-" + day;
+		int startDate = 0;
+		int finishDate = 0;
+
+		try {
+			if (Integer.parseInt(week) == 1) {
+				startDate = 1;
+				finishDate = 8;
+			}
+			if (Integer.parseInt(week) == 2) {
+				startDate = 8;
+				finishDate = 15;
+			}
+			if (Integer.parseInt(week) == 3) {
+				startDate = 15;
+				finishDate = 22;
+			}
+			if (Integer.parseInt(week) == 4) {
+				startDate = 22;
+				finishDate = 31;
+			}
+			String query = "select sday,spend.category,smoney from user_money.spend where sday BETWEEN '" + year + "-"
+					+ month + "-" + startDate + "' and '" + year + "-" + month + "-" + finishDate + "'";
+			pstmt = con.prepareStatement(query);
+			rs = pstmt.executeQuery();
+			int count = 0;
+			while (rs.next()) {
+				count++;
+			}
+			tempdata = new String[count][3];
+
+			rs = pstmt.executeQuery();
+			count = 0;
+			while (rs.next()) {
+				tempdata[count][0] = rs.getString(1);// day
+				tempdata[count][1] = rs.getString(2);// category
+				tempdata[count][2] = rs.getString(3);// mone
+				count++;
+			}
+
+		} catch (SQLException e) {
+			System.out.println("spendreadweek 오류" + e.getMessage());
+		}
+		return tempdata;
+	}
+
+	public String[][] incomereadweek(String week) {
+		tempdata = null;
+		Calendar cal = Calendar.getInstance();
+		int year = cal.get(Calendar.YEAR);
+		int month = cal.get(Calendar.MONTH) + 1;
+		int day = cal.get(Calendar.DAY_OF_MONTH);
+		int startDate = 0;
+		int finishDate = 0;
+
+		try {
+			if (Integer.parseInt(week) == 1) {
+				startDate = 1;
+				finishDate = 8;
+			}
+			if (Integer.parseInt(week) == 2) {
+				startDate = 8;
+				finishDate = 15;
+			}
+			if (Integer.parseInt(week) == 3) {
+				startDate = 15;
+				finishDate = 22;
+			}
+			if (Integer.parseInt(week) == 4) {
+				startDate = 22;
+				finishDate = 31;
+			}
+			String query = "select inday,income.category,inmoney from user_money.income where inday BETWEEN '" + year
+					+ "-" + month + "-" + startDate + "' and '" + year + "-" + month + "-" + finishDate + "'";
+			pstmt = con.prepareStatement(query);
+			rs = pstmt.executeQuery();
+			int count = 0;
+			while (rs.next()) {
+				count++;
+			}
+			tempdata = new String[count][3];
+
+			rs = pstmt.executeQuery();
+			count = 0;
+			while (rs.next()) {
+				tempdata[count][0] = rs.getString(1);// day
+				tempdata[count][1] = rs.getString(2);// category
+				tempdata[count][2] = rs.getString(3);// mone
+				count++;
+			}
+
+		} catch (SQLException e) {
+			System.out.println("spendreadweek 오류" + e.getMessage());
+		}
+		return tempdata;
+	}
+
+	public String[][] income(String m) {
+		tempdata = null;
+
+		String query = "select inday,income.category,inmoney from user_money.income where month(inday)='" + m + "'";
+		try {
+			pstmt = con.prepareStatement(query);
+			rs = pstmt.executeQuery();
+			int count = 0;
+			while (rs.next()) {
+				count++;
+			}
+			tempdata = new String[count][3];
+
+			rs = pstmt.executeQuery();
+			count = 0;
+			while (rs.next()) {
+				tempdata[count][0] = rs.getString(1);// day
+				tempdata[count][1] = rs.getString(2);// category
+				tempdata[count][2] = rs.getString(3);// mone
+				count++;
+			}
+
+		} catch (SQLException e) {
+			System.out.println("income 오류" + e.getMessage());
+		}
+		return tempdata;
+	}
+
+	public String[][] spendreadmonth(String m) {
+		tempdata = null;
+		String query = "select sday,spend.category,smoney from user_money.spend where month(sday)='" + m + "'";
+		try {
+			pstmt = con.prepareStatement(query);
+			rs = pstmt.executeQuery();
+			int count = 0;
+			while (rs.next()) {
+				count++;
+			}
+			tempdata = new String[count][3];
+
+			rs = pstmt.executeQuery();
+			count = 0;
+			while (rs.next()) {
+				tempdata[count][0] = rs.getString(1);// day
+				tempdata[count][1] = rs.getString(2);// category
+				tempdata[count][2] = rs.getString(3);// mone
+				count++;
+			}
+
+		} catch (SQLException e) {
+			System.out.println("spendread 오류" + e.getMessage());
+		}
+		return tempdata;
+	}
+
+	// 야간수당 update
+	public void Updatenightparttime(String pnum, String nighttime) {
+
+		String temp = "";
+		String query = "select parttime.nighttime from parttime where parttime.pnum = ?";
+		try {
+			pstmt = con.prepareStatement(query);
+			pstmt.setInt(1, Integer.parseInt(pnum));
+			rs = pstmt.executeQuery();
+			if (rs.next())
+				temp = rs.getString(1);
+
+		} catch (SQLException e) {
+			System.out.println("nightread 오류" + e.getMessage());
+		}
+		System.out.println(temp);
+		query = "update parttime set parttime.nighttime = ADDTIME(?,?) where parttime.pnum =?";
+		try {
+			pstmt = con.prepareStatement(query);
+			pstmt.setTime(1, Time.valueOf(temp));
+			pstmt.setTime(2, Time.valueOf(nighttime));
+			pstmt.setInt(3, Integer.parseInt(pnum));
+			pstmt.executeUpdate();
+		} catch (SQLException e) {
+			System.out.println("nighttime update 오류 " + e.getMessage());
+		}
+	}
+
+	// 추가수당 update
+	public void Updateaddtime(String pnum, String addtime) {
+		String temp = "";
+		String query = "select parttime.addtime from parttime where parttime.pnum = ?";
+		try {
+			pstmt = con.prepareStatement(query);
+			pstmt.setInt(1, Integer.parseInt(pnum));
+			rs = pstmt.executeQuery();
+			if (rs.next())
+				temp = rs.getString(1);
+
+		} catch (SQLException e) {
+			System.out.println("addread 오류" + e.getMessage());
+		}
+		System.out.println(temp);
+		query = "update parttime set parttime.addtime = ADDTIME(?,?) where parttime.pnum =?";
+		try {
+			pstmt = con.prepareStatement(query);
+			pstmt.setTime(1, Time.valueOf(temp));
+			pstmt.setTime(2, Time.valueOf(addtime));
+			pstmt.setInt(3, Integer.parseInt(pnum));
+			pstmt.executeUpdate();
+		} catch (SQLException e) {
+			System.out.println("addtime update 오류 " + e.getMessage());
+		}
+	}
+
+	// 알바 delete
+	public void Deleteparttime(String pnum) {
+
+		String query = "delete from parttime where pnum = ?";
+		try {
+			pstmt = con.prepareStatement(query);
+			pstmt.setInt(1, Integer.parseInt(pnum));
+			pstmt.executeUpdate();
+		} catch (SQLException e) {
+			System.out.println("parttime delete 오류 " + e.getMessage());
+		}
+
+	}
+
+	// 알바 값 (pnum,이름,시급,기본근무시간,추가근무,야간수당)
+	public String[][] parttimeread() {
+		tempdata = null;
+		String query = "select pnum,pname,hmoney,TIMEDIFF(endtime,starttime),addtime,nighttime from parttime";
+		try {
+			pstmt = con.prepareStatement(query);
+			rs = pstmt.executeQuery();
+			int count = 0;
+			while (rs.next()) {
+				count++;
+			}
+			tempdata = new String[count][6];
+
+			rs = pstmt.executeQuery();
+			count = 0;
+			while (rs.next()) {
+				tempdata[count][0] = rs.getString(1);// pnum
+				tempdata[count][1] = rs.getString(2);// pname
+				tempdata[count][2] = rs.getString(3);// hmoney
+				tempdata[count][3] = rs.getString(4);
+				tempdata[count][4] = rs.getString(5);
+				tempdata[count][5] = rs.getString(6);
+				count++;
+			}
+
+		} catch (SQLException e) {
+			System.out.println("parttimeread 오류" + e.getMessage());
+		}
+		return tempdata;
+	}
+
+	// 알바 요일값(월~일)
+	public String[] pdayread(String pnum) {
+		data = null;
+		String query = "select mon,tue,wen,thur,fri,sat,sun from parttime where pnum= ?";
+		try {
+			pstmt = con.prepareStatement(query);
+			pstmt.setInt(1, Integer.parseInt(pnum));
+			rs = pstmt.executeQuery();
+			data = new String[7];
+			rs = pstmt.executeQuery();
+			while (rs.next()) {
+				data[0] = rs.getString(1);// mon
+				data[1] = rs.getString(2);// tue
+				data[2] = rs.getString(3);// wen
+				data[3] = rs.getString(4);// thur
+				data[4] = rs.getString(5);// fri
+				data[5] = rs.getString(6);// sat
+				data[6] = rs.getString(7);// sun
+
+			}
+		} catch (SQLException e) {
+			System.out.println("pdayread 오류 " + e.getMessage());
+		}
+		return data;
+	}
+}

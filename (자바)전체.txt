@@ -1,0 +1,939 @@
+package 가계부;
+
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.EventQueue;
+import java.awt.Font;
+import java.awt.Graphics;
+import java.awt.Image;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.BufferedReader;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.time.LocalTime;
+
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JScrollBar;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.SwingConstants;
+import javax.swing.border.EmptyBorder;
+import javax.swing.border.TitledBorder;
+import javax.swing.table.DefaultTableModel;
+
+import com.sun.tools.javac.Main;
+
+import java.time.LocalDate;
+import java.util.StringTokenizer;
+
+import 가계부.생일;
+import 가계부.검색기능;
+import 가계부.고정지출;
+import 가계부.주월;
+import 가계부.알바;
+
+import javax.swing.JTextField;
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.ImageIcon;
+
+public class 전체 extends JFrame {
+	private String[][] reStr;
+	private JPanel contentPane;
+	private JLabel 지출이름;
+	private JLabel 수입이름;
+	private JLabel label날짜;
+	private JTextField 수입년;
+	private JTextField 지출년;
+	private JTextField 수입월;
+	private JTextField 지출월;
+	private JTextField 수입일;
+	private JTextField 지출일;
+	private JTextField 수입분류;
+	private JTextField 수입금액;
+	private JTextField 지출금액;
+	private JComboBox 지출분류;
+	private JButton 내역;
+	private JLabel label4;
+	private JLabel label5;
+	private JLabel label_6;
+	private JLabel label_7;
+	private JLabel label_8;
+	private JButton 지출저장;
+	private JButton 추가;
+	public JPanel 홈;
+	ImageIcon icon;
+
+	String[] 지출항목 = { "교통비", "식비", "문화비", "의류비", "주거비" };
+	private JTextField 결제수단;
+	private JLabel 결제;
+	private JTextField 세부사항;
+
+	/**
+	 * Launch the application.
+	 */
+	public static void main(String[] args) {
+		EventQueue.invokeLater(new Runnable() {
+			public void run() {
+				try {
+					전체 frame = new 전체();
+					frame.setVisible(true);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		});
+	}
+
+	/**
+	 * Create the frame.
+	 */
+	public 전체() {
+		icon = new ImageIcon("C:\\Users\\qkslz\\OneDrive\\바탕 화면\\gui배경화면\\무제-1.jpg");
+		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		setBounds(600, 100, 400, 600);
+		contentPane = new JPanel();
+		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
+		setContentPane(contentPane);
+		contentPane.setLayout(null);
+
+		// 홈화면
+		JPanel 홈화면 = new JPanel() {
+			public void paintComponent(Graphics g) {
+				g.drawImage(icon.getImage(), 0, 0, null);
+				setOpaque(false);
+				super.paintComponent(g);
+			}
+		};
+		홈화면.setBounds(0, 0, 400, 600);
+		contentPane.add(홈화면);
+		홈화면.setLayout(null);
+
+		JLabel lblNewLabel = new JLabel(" \uD604\uC7AC \uCD1D \uC790\uC0B0   ");
+		lblNewLabel.setBounds(47, 52, 158, 51);
+		lblNewLabel.setForeground(Color.BLACK);
+		lblNewLabel.setFont(new Font("맑은 고딕", Font.PLAIN, 16));
+		홈화면.add(lblNewLabel);
+
+		JButton btnNewButton_1 = new JButton("\uACE0\uC815\uC9C0\uCD9C");
+		btnNewButton_1.setFont(new Font("굴림", Font.PLAIN, 10));
+		btnNewButton_1.setBounds(78, 411, 80, 155);
+		홈화면.add(btnNewButton_1);
+
+		JButton btnNewButton_1_1 = new JButton("\uC0DD\uC77C");
+		btnNewButton_1_1.setFont(new Font("굴림", Font.PLAIN, 10));
+		btnNewButton_1_1.setBounds(0, 411, 80, 155);
+		홈화면.add(btnNewButton_1_1);
+
+		JButton btnNewButton_1_2 = new JButton("\uC18C\uBE44\uBD84\uC11D");
+		btnNewButton_1_2.setFont(new Font("굴림", Font.PLAIN, 10));
+		btnNewButton_1_2.setBounds(156, 411, 80, 155);
+		홈화면.add(btnNewButton_1_2);
+
+		JButton btnNewButton_1_3 = new JButton("\uAC80\uC0C9");
+		btnNewButton_1_3.setFont(new Font("굴림", Font.PLAIN, 10));
+		btnNewButton_1_3.setBounds(233, 411, 77, 155);
+		홈화면.add(btnNewButton_1_3);
+
+		JButton btnNewButton_1_4 = new JButton("\uC54C\uBC14");
+		btnNewButton_1_4.setFont(new Font("굴림", Font.PLAIN, 10));
+		btnNewButton_1_4.setBounds(308, 411, 80, 155);
+		홈화면.add(btnNewButton_1_4);
+
+		JLabel lblNewLabel_1 = new JLabel("         \uC624\uB298\uC758 \uC54C\uB9BC");
+		lblNewLabel_1.setFont(new Font("맑은 고딕", Font.PLAIN, 16));
+		lblNewLabel_1.setBounds(92, 125, 200, 179);
+		lblNewLabel_1.setVerticalAlignment(SwingConstants.TOP);
+		홈화면.add(lblNewLabel_1);
+
+		JButton btnNewButton_2 = new JButton("\uC9C0\uCD9C");
+		btnNewButton_2.setFont(new Font("맑은 고딕", Font.PLAIN, 13));
+		btnNewButton_2.setBounds(210, 330, 97, 30);
+		홈화면.add(btnNewButton_2);
+		// 수입
+		JButton button = new JButton("\uC218\uC785");
+		button.setFont(new Font("맑은 고딕", Font.PLAIN, 13));
+		button.setBounds(79, 330, 97, 30);
+		홈화면.add(button);
+		button.setOpaque(false);
+		JLabel 자산 = new JLabel("");
+		자산.setFont(new Font("맑은 고딕", Font.BOLD, 15));
+		자산.setBounds(171, 61, 152, 30);
+		홈화면.add(자산);
+		총자산(자산);
+
+		JLabel 알림 = new JLabel("");
+		알림.setFont(new Font("맑은 고딕", Font.PLAIN, 14));
+		알림.setBounds(100, 167, 175, 30);
+		홈화면.add(알림);
+
+		JLabel 알림2 = new JLabel("New label");
+		알림2.setFont(new Font("맑은 고딕", Font.PLAIN, 14));
+		알림2.setBounds(100, 230, 175, 43);
+		홈화면.add(알림2);
+
+		JLabel 알림3 = new JLabel("");
+		알림3.setFont(new Font("맑은 고딕", Font.PLAIN, 14));
+		알림3.setBounds(100, 200, 175, 30);
+		홈화면.add(알림3);
+		알림(알림, 알림2, 알림3);
+
+		JPanel 수입 = new JPanel() {
+			public void paintComponent(Graphics g) {
+				icon = new ImageIcon("C:\\Users\\qkslz\\OneDrive\\바탕 화면\\gui배경화면\\기본2a.jpg");
+				g.drawImage(icon.getImage(), 0, 0, null);
+				setOpaque(false);
+				super.paintComponent(g);
+			}
+		};
+		수입.setBounds(0, 0, 386, 591);
+		contentPane.add(수입);
+		수입.setLayout(null);
+
+		수입이름 = new JLabel("수입 추가");
+		수입이름.setFont(new Font("맑은 고딕", Font.BOLD, 20));
+		수입이름.setBounds(150, 27, 323, 38);
+		수입.add(수입이름);
+
+		label날짜 = new JLabel("\uB0A0\uC9DC");
+		label날짜.setFont(new Font("맑은 고딕", Font.BOLD, 15));
+		label날짜.setBounds(30, 87, 50, 15);
+		수입.add(label날짜);
+
+		수입년 = new JTextField();
+		수입년.setBounds(30, 112, 80, 21);
+		수입.add(수입년);
+		수입년.setColumns(10);
+
+		수입월 = new JTextField();
+		수입월.setBounds(131, 112, 80, 21);
+		수입.add(수입월);
+		수입월.setColumns(10);
+
+		수입일 = new JTextField();
+		수입일.setBounds(253, 112, 80, 21);
+		수입.add(수입일);
+		수입일.setColumns(10);
+
+		JLabel label0 = new JLabel("\uB144");
+		label0.setFont(new Font("맑은 고딕", Font.BOLD, 14));
+		label0.setBounds(111, 113, 50, 15);
+		수입.add(label0);
+
+		JLabel label = new JLabel("\uC6D4");
+		label.setFont(new Font("맑은 고딕", Font.BOLD, 14));
+		label.setBounds(218, 113, 50, 15);
+		수입.add(label);
+
+		JLabel label_1 = new JLabel("\uC77C");
+		label_1.setFont(new Font("맑은 고딕", Font.BOLD, 14));
+		label_1.setBounds(342, 113, 50, 15);
+		수입.add(label_1);
+
+		JLabel label_2 = new JLabel("\uBD84\uB958");
+		label_2.setFont(new Font("맑은 고딕", Font.BOLD, 15));
+		label_2.setBounds(30, 163, 50, 15);
+		수입.add(label_2);
+
+		수입분류 = new JTextField();
+		수입분류.setBounds(30, 188, 300, 32);
+		수입.add(수입분류);
+		수입분류.setColumns(10);
+
+		JLabel label_3 = new JLabel("\uAE08\uC561");
+		label_3.setFont(new Font("맑은 고딕", Font.BOLD, 15));
+		label_3.setBounds(30, 243, 50, 15);
+		수입.add(label_3);
+
+		수입금액 = new JTextField();
+		수입금액.setColumns(10);
+		수입금액.setBounds(30, 268, 300, 32);
+		수입.add(수입금액);
+
+		JButton 수입저장 = new JButton("\uC800\uC7A5");
+		수입저장.setFont(new Font("맑은 고딕", Font.BOLD, 17));
+		수입저장.setBounds(232, 462, 125, 65);
+		수입.add(수입저장);
+
+		JButton 수입닫기;
+		수입닫기 = new JButton("닫기");
+		수입닫기.setFont(new Font("맑은 고딕", Font.BOLD, 17));
+		수입닫기.setBounds(90, 462, 132, 65);
+		수입.add(수입닫기);
+
+		내역 = new JButton("\uB0B4\uC5ED\uBD88\uB7EC\uC624\uAE30");
+		내역.setFont(new Font("맑은 고딕", Font.BOLD, 15));
+		내역.setBounds(30, 440, 158, 35);
+
+		JPanel 지출 = new JPanel() {
+			public void paintComponent(Graphics g) {
+				icon = new ImageIcon("C:\\Users\\qkslz\\OneDrive\\바탕 화면\\gui배경화면\\기본2a.jpg");
+				g.drawImage(icon.getImage(), 0, 0, null);
+				setOpaque(false);
+				super.paintComponent(g);
+			}
+		};
+		지출.setBounds(0, 0, 386, 591);
+		contentPane.add(지출);
+		지출.add(내역);// 내역 불러오기 버튼
+		내역.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				new read();
+
+			}
+
+		});
+
+		지출.setLayout(null);
+		지출이름 = new JLabel("\uC9C0\uCD9C 추가");
+		지출이름.setFont(new Font("맑은 고딕", Font.BOLD, 19));
+		지출이름.setBounds(150, 27, 323, 38);
+		지출.add(지출이름);
+
+		label날짜 = new JLabel("\uB0A0\uC9DC");
+		label날짜.setFont(new Font("맑은 고딕", Font.BOLD, 15));
+		label날짜.setBounds(30, 97, 50, 15);
+		지출.add(label날짜);
+
+		지출년 = new JTextField();
+		지출년.setBounds(30, 117, 80, 21);
+		지출.add(지출년);
+		지출년.setColumns(10);
+
+		지출월 = new JTextField();
+		지출월.setBounds(140, 117, 80, 21);
+		지출.add(지출월);
+		지출월.setColumns(10);
+
+		지출일 = new JTextField();
+		지출일.setBounds(253, 117, 80, 21);
+		지출.add(지출일);
+		지출일.setColumns(10);
+
+		JLabel labe4;
+		label4 = new JLabel("\uB144");
+		label4.setFont(new Font("맑은 고딕", Font.BOLD, 14));
+		label4.setBounds(111, 118, 50, 15);
+		지출.add(label4);
+
+		JLabel labe5;
+		label5 = new JLabel("\uC6D4");
+		label5.setFont(new Font("맑은 고딕", Font.BOLD, 14));
+		label5.setBounds(228, 118, 50, 15);
+		지출.add(label5);
+
+		JLabel label6;
+		label_6 = new JLabel("\uC77C");
+		label_6.setFont(new Font("맑은 고딕", Font.BOLD, 14));
+		label_6.setBounds(340, 118, 50, 15);
+		지출.add(label_6);
+
+		JLabel label7;
+		label_7 = new JLabel("\uBD84\uB958");
+		label_7.setFont(new Font("맑은 고딕", Font.BOLD, 15));
+		label_7.setBounds(30, 153, 50, 15);
+		지출.add(label_7);
+
+		JLabel label8;
+		label_8 = new JLabel("\uAE08\uC561");
+		label_8.setFont(new Font("맑은 고딕", Font.BOLD, 15));
+		label_8.setBounds(30, 365, 50, 15);
+		지출.add(label_8);
+
+		지출금액 = new JTextField();
+		지출금액.setColumns(10);
+		지출금액.setBounds(30, 390, 300, 32);
+		지출.add(지출금액);
+
+		JButton 지출저장;
+		지출저장 = new JButton("\uC800\uC7A5");
+		지출저장.setFont(new Font("맑은 고딕", Font.BOLD, 17));
+		지출저장.setBounds(270, 490, 80, 35);
+		지출.add(지출저장);
+
+		JButton 지출닫기;
+		지출닫기 = new JButton("닫기");
+		지출닫기.setFont(new Font("맑은 고딕", Font.BOLD, 17));
+		지출닫기.setBounds(180, 490, 80, 35);
+		지출.add(지출닫기);
+
+		결제수단 = new JTextField();
+		결제수단.setColumns(10);
+		결제수단.setBounds(30, 321, 300, 32);
+		지출.add(결제수단);
+
+		결제 = new JLabel("\uACB0\uC81C\uC218\uB2E8");
+		결제.setFont(new Font("맑은 고딕", Font.BOLD, 15));
+		결제.setBounds(30, 296, 132, 15);
+		지출.add(결제);
+
+		세부사항 = new JTextField();
+		세부사항.setColumns(10);
+		세부사항.setBounds(30, 254, 300, 32);
+		지출.add(세부사항);
+
+		JLabel label1 = new JLabel("\uC138\uBD80\uC0AC\uD56D");
+		label1.setFont(new Font("맑은 고딕", Font.BOLD, 15));
+		label1.setBounds(30, 229, 96, 15);
+		지출.add(label1);
+
+		지출분류 = new JComboBox();
+		지출분류.setModel(new DefaultComboBoxModel(new String[] { "\uAD50\uD1B5\uBE44", "\uC2DD\uBE44", "\uC0DD\uD65C",
+				"\uBB38\uD654", "\uC758\uB958", "\uAE30\uD0C0" }));
+		지출분류.setFont(new Font("맑은 고딕", Font.PLAIN, 14));
+		지출분류.setBounds(30, 177, 300, 32);
+		지출.add(지출분류);
+
+		// 생일
+		JPanel 생일 = new JPanel() {
+
+			public void paintComponent(Graphics g) {
+				icon = new ImageIcon("C:\\Users\\qkslz\\OneDrive\\바탕 화면\\gui배경화면\\무제-2.jpg");
+				g.drawImage(icon.getImage(), 0, 0, null);
+				setOpaque(false);
+				super.paintComponent(g);
+			}
+		};
+		생일.setBounds(0, 0, 386, 591);
+		contentPane.add(생일);
+		생일.setLayout(null);
+		생일 a = new 생일(생일);
+		JButton 홈 = new JButton("\uD648");
+		생일.setFont(new Font("맑은 고딕", Font.PLAIN, 13));
+		홈.setBounds(310, 21, 52, 32);
+		생일.add(홈);
+		// 고정지출
+
+		JPanel 고정지출 = new JPanel() {
+			public void paintComponent(Graphics g) {
+				icon = new ImageIcon("C:\\Users\\qkslz\\OneDrive\\바탕 화면\\gui배경화면\\무제-3.jpg");
+				g.drawImage(icon.getImage(), 0, 0, null);
+				setOpaque(false);
+				super.paintComponent(g);
+			}
+		};
+		고정지출.setBounds(0, 0, 386, 591);
+		contentPane.add(고정지출);
+		고정지출.setLayout(null);
+		고정지출 c = new 고정지출(고정지출);
+		JButton Change1 = new JButton("홈");
+		Change1.setFont(new Font("맑은 고딕", Font.PLAIN, 15));
+		Change1.setBounds(310, 21, 52, 32);
+		고정지출.add(Change1);
+
+		// 소비분석
+
+		JPanel 소비분석 = new JPanel() {
+			public void paintComponent(Graphics g) {
+				icon = new ImageIcon("C:\\Users\\qkslz\\OneDrive\\바탕 화면\\gui배경화면\\기본4.jpg");
+				g.drawImage(icon.getImage(), 0, 0, null);
+				setOpaque(false);
+				super.paintComponent(g);
+			}
+		};
+		소비분석.setBounds(0, 0, 386, 591);
+		contentPane.add(소비분석);
+		소비분석.setLayout(null);
+		주월 d = new 주월(소비분석);
+		JButton bbak = new JButton("\uD648");
+		bbak.setFont(new Font("맑은 고딕", Font.PLAIN, 15));
+		bbak.setBounds(310, 10, 52, 32);
+		소비분석.add(bbak);
+
+		// 검색기능
+
+		JPanel 검색기능 = new JPanel() {
+			public void paintComponent(Graphics g) {
+				icon = new ImageIcon("C:\\Users\\qkslz\\OneDrive\\바탕 화면\\gui배경화면\\search.jpg");
+				g.drawImage(icon.getImage(), 0, 0, null);
+				setOpaque(false);
+				super.paintComponent(g);
+			}
+		};
+		검색기능.setBounds(0, 0, 386, 591);
+		contentPane.add(검색기능);
+		검색기능.setLayout(null);
+		검색기능 b = new 검색기능(검색기능);
+		JButton back = new JButton("\uD648");
+		검색기능.setFont(new Font("맑은 고딕", Font.PLAIN, 13));
+		back.setBounds(290, 20, 52, 32);
+		검색기능.add(back);
+
+		// 알바기능
+		JPanel 알바 = new JPanel() {
+			public void paintComponent(Graphics g) {
+				icon = new ImageIcon("C:\\Users\\qkslz\\OneDrive\\바탕 화면\\gui배경화면\\기본.jpg");
+				g.drawImage(icon.getImage(), 0, 0, null);
+				setOpaque(false);
+				super.paintComponent(g);
+			}
+		};
+		알바.setBounds(0, 0, 386, 591);
+		contentPane.add(알바);
+		알바.setLayout(null);
+		알바 e = new 알바(알바);
+		JButton 백 = new JButton("\uD648");
+		알바.setFont(new Font("맑은 고딕", Font.PLAIN, 13));
+		백.setBounds(320, 20, 52, 32);
+		알바.add(백);
+
+		수입.setVisible(false);
+		지출.setVisible(false);
+		생일.setVisible(false);
+		고정지출.setVisible(false);
+		소비분석.setVisible(false);
+		알바.setVisible(false);
+		검색기능.setVisible(false);
+
+		btnNewButton_1_1.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				생일.setVisible(true);
+				홈화면.setVisible(false);
+			}
+
+		});
+		홈.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				icon = new ImageIcon("C:\\Users\\qkslz\\OneDrive\\바탕 화면\\gui배경화면\\무제-1.jpg");
+				생일.setVisible(false);
+				홈화면.setVisible(true);
+				알림(알림, 알림2, 알림3);
+			}
+
+		});
+		btnNewButton_1.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				고정지출.setVisible(true);
+				홈화면.setVisible(false);
+			}
+
+		});
+		btnNewButton_1_2.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				소비분석.setVisible(true);
+				홈화면.setVisible(false);
+			}
+		});
+
+		btnNewButton_1_3.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				검색기능.setVisible(true);
+				홈화면.setVisible(false);
+			}
+		});
+
+		btnNewButton_1_4.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				알바.setVisible(true);
+				홈화면.setVisible(false);
+			}
+
+		});
+
+		button.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+
+				수입.setVisible(true);
+				홈화면.setVisible(false);
+			}
+
+		});
+		btnNewButton_2.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				지출.setVisible(true);
+				홈화면.setVisible(false);
+			}
+
+		});
+		수입닫기.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				icon = new ImageIcon("C:\\Users\\qkslz\\OneDrive\\바탕 화면\\gui배경화면\\무제-1.jpg");
+				수입.setVisible(false);
+				홈화면.setVisible(true);
+				수입년.setText("");
+				수입월.setText("");
+				수입일.setText("");
+				수입금액.setText("");
+				수입분류.setText("");
+			}
+
+		});
+		지출닫기.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				icon = new ImageIcon("C:\\Users\\qkslz\\OneDrive\\바탕 화면\\gui배경화면\\무제-1.jpg");
+				지출.setVisible(false);
+				홈화면.setVisible(true);
+				지출년.setText("");
+				지출월.setText("");
+				지출일.setText("");
+				지출금액.setText("");
+				결제수단.setText("");
+				세부사항.setText("");
+			}
+
+		});
+		수입저장.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+
+				수입.setVisible(false);
+				홈화면.setVisible(true);
+				DB수입();
+				총자산(자산);
+				수입년.setText("");
+				수입월.setText("");
+				수입일.setText("");
+				수입금액.setText("");
+				수입분류.setText("");
+				icon = new ImageIcon("C:\\Users\\qkslz\\OneDrive\\바탕 화면\\gui배경화면\\무제-1.jpg");
+			}
+
+		});
+		지출저장.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				지출.setVisible(false);
+				홈화면.setVisible(true);
+				DB지출();
+				총자산(자산);
+				지출년.setText("");
+				지출월.setText("");
+				지출일.setText("");
+				지출금액.setText("");
+				결제수단.setText("");
+				세부사항.setText("");
+				icon = new ImageIcon("C:\\Users\\qkslz\\OneDrive\\바탕 화면\\gui배경화면\\무제-1.jpg");
+			}
+
+		});
+
+		Change1.addActionListener((ActionListener) new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				icon = new ImageIcon("C:\\Users\\qkslz\\OneDrive\\바탕 화면\\gui배경화면\\무제-1.jpg");
+				고정지출.setVisible(false);
+				홈화면.setVisible(true);
+				알림(알림, 알림2, 알림3);
+			}
+		});
+		back.addActionListener((ActionListener) new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				icon = new ImageIcon("C:\\Users\\qkslz\\OneDrive\\바탕 화면\\gui배경화면\\무제-1.jpg");
+				검색기능.setVisible(false);
+				홈화면.setVisible(true);
+			}
+		});
+		백.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				icon = new ImageIcon("C:\\Users\\qkslz\\OneDrive\\바탕 화면\\gui배경화면\\무제-1.jpg");
+				알바.setVisible(false);
+				홈화면.setVisible(true);
+				총자산(자산);
+			}
+
+		});
+		bbak.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				icon = new ImageIcon("C:\\Users\\qkslz\\OneDrive\\바탕 화면\\gui배경화면\\무제-1.jpg");
+				소비분석.setVisible(false);
+				홈화면.setVisible(true);
+			}
+
+		});
+	}
+
+	public void DB수입() {
+		String Y = 수입년.getText();
+		String M = 수입월.getText();
+		String D = 수입일.getText();
+		String time = (Y + "-" + M + "-" + D);
+		String money = 수입금액.getText();
+		String item = 수입분류.getText();
+		DBConnection db = new DBConnection();
+		db.DB_INCOMEinsert(time, money, item, "1");
+	}
+
+	public void DB지출() {
+		String y = 지출년.getText();
+		String m = 지출월.getText();
+		String d = 지출일.getText();
+		String time1 = (y + "-" + m + "-" + d);
+		String money1 = 지출금액.getText();
+		String item1 = 지출분류.getSelectedItem().toString();
+		String way = 결제수단.getText();
+		String detail = 세부사항.getText();
+		DBConnection db = new DBConnection();
+		db.DB_SPENDinsert(time1, money1, item1, way, "1", detail);
+	}
+
+	public void 알림(JLabel 알림, JLabel 알림2, JLabel 알림3) {
+		String al = " ";
+		int j = 0;
+		int m = 0;
+		LocalDate d = LocalDate.now();
+		DBConnection db = new DBConnection();
+		String[][] a = db.todayevent(d);
+		;
+		for (int i = 0; i < a.length; i++) {
+			if (Integer.valueOf(a[i][2]) == 1) {
+				알림.setText("이벤트가 있습니다!!");
+				al = a[i][0] + "의 " + a[i][1] + "원 예정";
+				알림3.setText(al);
+				if (m == 0) {
+					알림2.setText(" ");
+				}
+				j = 1;
+
+			} else {
+				if (j == 0) {
+					알림.setText("이벤트가 없습니다.");
+					알림3.setText(" ");
+				}
+				al = a[i][0] + "의 " + a[i][1] + "원 예정";
+				알림2.setText(al);
+				m = 1;
+
+			}
+		}
+		if (al == " ") {
+			알림.setText(al);
+			알림3.setText("알림이 없습니다. ");
+			알림2.setText(al);
+		}
+
+	}
+
+	public void 총자산(JLabel 자산) {
+		DBConnection db = new DBConnection();
+		int a = db.Total(167972, 1);
+		String b = String.valueOf(a);
+		자산.setText(b);
+	}
+
+	class read extends JFrame{
+		public read() {
+			
+			JPanel readC =new JPanel(){
+				public void paintComponent(Graphics g) {
+					icon = new ImageIcon("C:\\Users\\qkslz\\OneDrive\\바탕 화면\\gui배경화면\\내역.jpg");
+					g.drawImage(icon.getImage(), 0, 0, null);
+					setOpaque(false);
+					super.paintComponent(g);
+				}
+			};
+			setContentPane(readC);
+			
+			try {
+				fileLineRead();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
+			
+			readC.setBorder(new EmptyBorder(0, 0, 0, 0));
+			setContentPane(readC);
+			readC.setLayout(null);
+
+			String[] t = new String[reStr[0].length];
+			for(int i=0;i<t.length;i++) {
+				t[i] = reStr[0][i];
+				
+			}
+
+			JLabel lblNewLabel = new JLabel("\uB0B4\uC5ED \uCD94\uAC00 \uC0AC\uD56D");
+			lblNewLabel.setFont(new Font("맑은 고딕", Font.BOLD, 19));
+			lblNewLabel.setBounds(31, 27, 156, 41);
+			readC.add(lblNewLabel);
+
+			JLabel lblNewLabel_1 = new JLabel("\uCD94\uAC00 \uAC00\uB2A5\uD55C \uC0AC\uD56D\uC740 \uCD1D ");
+			lblNewLabel_1.setFont(new Font("맑은 고딕", Font.PLAIN, 15));
+			lblNewLabel_1.setBounds(41, 67, 167, 41);
+			readC.add(lblNewLabel_1);
+
+			JLabel lblNewLabel_1_1 = new JLabel(Integer.toString(t.length));
+			lblNewLabel_1_1.setFont(new Font("맑은 고딕", Font.BOLD, 16));
+			lblNewLabel_1_1.setBounds(222,66, 35, 41);
+			readC.add(lblNewLabel_1_1);
+
+			JLabel lblNewLabel_1_1_1 = new JLabel("\uAC1C \uC785\uB2C8\uB2E4.");
+			lblNewLabel_1_1_1.setFont(new Font("맑은 고딕", Font.PLAIN, 15));
+			lblNewLabel_1_1_1.setBounds(238, 66, 91, 41);
+			readC.add(lblNewLabel_1_1_1);
+
+			JLabel lblNewLabel_1_1_1_1 = new JLabel("\uCD94\uAC00 \uB0B4\uC5ED \uC120\uD0DD");
+			lblNewLabel_1_1_1_1.setFont(new Font("맑은 고딕", Font.BOLD, 15));
+			lblNewLabel_1_1_1_1.setBounds(51, 123, 118, 41);
+			readC.add(lblNewLabel_1_1_1_1);
+
+			
+
+			JComboBox comboBox = new JComboBox(t);
+			
+			
+			comboBox.setFont(new Font("맑은 고딕", Font.PLAIN, 14));
+			comboBox.setBounds(181, 127, 193, 35);
+			readC.add(comboBox);
+			JButton btnNewButton = new JButton("\uC9C0\uCD9C \uCD94\uAC00");
+			btnNewButton.setFont(new Font("맑은 고딕", Font.BOLD, 14));
+			btnNewButton.setBounds(188, 191, 100, 35);
+			
+			readC.add(btnNewButton);
+			btnNewButton.addActionListener(new ActionListener() {
+
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					String y = reStr[3][comboBox.getSelectedIndex()].substring(0, 4);
+					String m = reStr[3][comboBox.getSelectedIndex()].substring(5, 7);
+					String d = reStr[3][comboBox.getSelectedIndex()].substring(8);
+					지출년.setText(y);
+					지출월.setText(m);
+					지출일.setText(d);
+					지출금액.setText(reStr[1][comboBox.getSelectedIndex()]);
+					결제수단.setText(reStr[2][comboBox.getSelectedIndex()]);
+					세부사항.setText(reStr[0][comboBox.getSelectedIndex()]);
+					dispose();
+				}
+
+			});
+			JButton btnNewButton_1 = new JButton("\uB2EB\uAE30");
+			btnNewButton_1.setFont(new Font("맑은 고딕", Font.BOLD, 14));
+			btnNewButton_1.setBounds(298, 191, 100, 35);
+			btnNewButton_1.addActionListener(new ActionListener() {
+
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					icon = new ImageIcon("C:\\Users\\qkslz\\OneDrive\\바탕 화면\\gui배경화면\\무제-1.jpg");
+					dispose();
+				}
+
+			});
+			readC.add(btnNewButton_1);
+			this.setLocation(600, 250);
+			setSize(450, 300);
+			setResizable(false);
+			setVisible(true);
+
+		}
+	}
+
+	public void fileLineRead() throws IOException {
+		reStr = null;//초기화
+	
+		String[] temp1 = new String[10];
+		String[] temp2 = new String[10];
+		String[] temp3 = new String[10];
+		String[] temp4 = new String[10];
+		FileInputStream input = new FileInputStream("C:\\Temp\\kakao.txt");
+		InputStreamReader reader = new InputStreamReader(input, "UTF-8");
+		BufferedReader in = new BufferedReader(reader);
+		String s = null;
+
+		String an1 = "- 상품명:"; // - 상품명:
+		String an2 = "- 결제금액:"; // - 금액:
+		String an3 = "- 결제수단:"; // - 수단:
+		String an4 = "- 결제일시:";// 날짜
+		int n1 = 0;
+		int n2 = 0;
+		int n3 = 0;
+		int n4 = 0;
+
+		while ((s = in.readLine()) != null) { // 텍스트에서 불러온 문자가 없을 때까지 루프한다.
+
+			if (s.contains(an1)) { // 상품명 검색중입니다~
+
+				StringTokenizer st1 = new StringTokenizer(s, an1);
+				String[] arr1 = new String[st1.countTokens()];
+
+				while (st1.hasMoreTokens()) {
+					arr1[0] += " " + st1.nextToken();
+				}
+
+				arr1[0] = arr1[0].substring(5, arr1[0].length());
+
+				temp1[n1++] = arr1[0];
+
+			}
+
+			if (s.contains(an2)) { // 결제금액 검색중입니다~
+				StringTokenizer st2 = new StringTokenizer(s, an2);
+				String[] arr2 = new String[st2.countTokens()];
+
+				arr2[0] = st2.nextToken();
+				arr2[0] = arr2[0].replaceAll("원", "");
+				arr2[0] = arr2[0].replaceAll(",", "");
+				temp2[n2] = arr2[0];
+				n2++;
+			}
+
+			if (s.contains(an3)) { // 결제수단 검색중입니다~
+
+				StringTokenizer st3 = new StringTokenizer(s, an3); // : 을 기준으로 잘랐습니당.
+				String[] arr3 = new String[st3.countTokens()];
+
+				arr3[0] = st3.nextToken();
+
+				temp3[n3] = arr3[0];
+				n3++;
+
+			}
+
+			if (s.contains(an4)) {
+				StringTokenizer st4 = new StringTokenizer(s, an4);
+				String[] arr4 = new String[st4.countTokens()];
+
+				arr4[0] = st4.nextToken();
+				arr4[0] = arr4[0].replaceAll(" ", "");
+				arr4[0] = arr4[0].replace(".", "-");
+				// arr4[0] = arr4[0].substring(0, arr4[0].length()-5 );
+
+				temp4[n4] = arr4[0];
+				n4++;
+
+			}
+
+		}
+		reStr = new String[4][n1];
+		for (int i = 0; i < n1; i++) {
+			reStr[0][i] = temp1[i];
+			reStr[1][i] = temp2[i];
+			reStr[2][i] = temp3[i];
+			reStr[3][i] = temp4[i];
+		}
+
+		in.close();
+
+	}
+}

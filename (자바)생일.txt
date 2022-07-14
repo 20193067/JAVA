@@ -1,0 +1,488 @@
+package 가계부;
+
+import java.awt.BorderLayout;
+import java.awt.EventQueue;
+
+import javax.swing.JFrame;
+import javax.swing.JPanel;
+import javax.swing.border.EmptyBorder;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.SwingConstants;
+import java.awt.Font;
+import java.awt.Graphics;
+
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.JTextField;
+import javax.swing.table.DefaultTableModel;
+
+import javax.swing.JComboBox;
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+
+import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
+import java.sql.Date;
+import java.text.SimpleDateFormat;
+import java.awt.event.ActionEvent;
+
+public class 생일 extends JFrame {
+	DBConnection db;
+	private JPanel contentPane;
+	private JTable table;
+	DefaultTableModel model;
+	String[][] data;// db에서 읽어올 데이터
+	public String inputStr[] = new String[3];// 추가창에서 input할 내용들
+	int nowmonth, nowyear, sum;// 지금 달, 년도, 총금액
+	JLabel 금액;
+	String[] tname = { "날짜", "이름", "금액" };
+	public static void main(String[] args) {
+		EventQueue.invokeLater(new Runnable() {
+			public void run() {
+				try {
+					생일 frame = new 생일();
+					frame.setVisible(true);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		});
+	}
+	public 생일() {}
+	public 생일(JPanel contentPane) {
+		JLabel name = new JLabel("\uC774\uBC88 \uB2EC \uC0DD\uC77C \uBAA9\uB85D");
+		name.setBounds(0, 20, 376, 26);
+		name.setFont(new Font("맑은 고딕", Font.BOLD, 19));
+		name.setHorizontalAlignment(SwingConstants.CENTER);
+		contentPane.add(name);
+		// 현재 년, 월 구하기
+		long time = System.currentTimeMillis();
+		SimpleDateFormat dayTime = new SimpleDateFormat("MM");
+		nowmonth = Integer.parseInt(dayTime.format(new Date(time)));
+		dayTime = new SimpleDateFormat("YYYY");
+		nowyear = Integer.parseInt(dayTime.format(new Date(time)));
+
+		
+		db = new DBConnection();
+		data = db.birthread(nowmonth);
+		for (int i = 0; i < data.length; i++) {
+			data[i][0] = data[i][0].substring(5);// (월&일)만 추출
+		}
+		model = new DefaultTableModel(data, tname);
+		table = new JTable(model);
+		JScrollPane sc = new JScrollPane(table);
+		sc.setBounds(25, 68, 337, 357);
+		contentPane.add(sc);
+		table.getColumnModel().getColumn(0).setPreferredWidth(22);
+		table.getColumnModel().getColumn(1).setPreferredWidth(78);
+		sc.setViewportView(table);
+
+		JLabel 지출액 = new JLabel("\uCD1D \uC0DD\uC77C \uC608\uC815 \uC9C0\uCD9C\uC561:");// 총 생일 예정 지출액
+		지출액.setBounds(25, 456, 181, 26);
+		지출액.setFont(new Font("맑은 고딕", Font.BOLD, 15));
+		contentPane.add(지출액);
+
+		JLabel 가격 = new JLabel("\uC6D0");// 원
+		가격.setBounds(310, 456, 52, 26);
+		가격.setHorizontalAlignment(SwingConstants.RIGHT);
+		가격.setFont(new Font("맑은 고딕", Font.BOLD, 15));
+		contentPane.add(가격);
+
+		for (int i = 0; i < data.length; i++) {
+			sum += Integer.parseInt(data[i][2]);
+		}
+		금액 = new JLabel(Integer.toString(sum));
+		금액.setFont(new Font("맑은 고딕", Font.BOLD, 16));
+		금액.setBounds(200, 454, 127, 31);
+		금액.setHorizontalAlignment(JLabel.RIGHT);
+		contentPane.add(금액);
+
+		JButton 추가 = new JButton("\uCD94\uAC00");
+		추가.setBounds(57, 503, 91, 37);
+		추가.setFont(new Font("맑은 고딕", Font.BOLD, 15));
+		contentPane.add(추가);
+		추가.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				new addbtn();
+			}
+		});
+
+		JButton 삭제 = new JButton("\uC0AD\uC81C");
+		삭제.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				if (table.getSelectedRow() != -1) {
+					int i = table.getSelectedRow();
+					int result = JOptionPane.showConfirmDialog(null, "정말 " + data[i][1] + "님의 생일을 삭제하시겠습니까?", "확인창",
+							JOptionPane.YES_NO_OPTION);
+					if (result == JOptionPane.CLOSED_OPTION)
+						return;
+					else if (result == JOptionPane.YES_OPTION) {
+						db = new DBConnection();
+						String name = data[i][1];
+						sum -= Integer.parseInt(data[i][2]);
+						db.birthdelete(nowyear + "-" + data[i][0], data[i][1], data[i][2]);
+						금액.setText(Integer.toString(sum));
+						model.removeRow(table.getSelectedRow());
+						JOptionPane.showMessageDialog(null, name + "님의 생일을 정상적으로 삭제했습니다.", "정상 삭제",
+								JOptionPane.INFORMATION_MESSAGE, null);
+					} else
+						return;
+
+				}
+			}
+		});
+		삭제.setBounds(243, 503, 91, 37);
+		삭제.setFont(new Font("맑은 고딕", Font.BOLD, 15));
+		contentPane.add(삭제);
+
+		JButton 수정 = new JButton("\uC218\uC815");
+		수정.setFont(new Font("맑은 고딕", Font.BOLD, 15));
+		수정.setBounds(150, 503, 91, 37);
+		수정.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				new changebtn(table.getSelectedRow());
+			}
+		});
+		contentPane.add(수정);
+
+	}
+
+	class addbtn extends JFrame {
+		private JTextField nametextField;
+		private JTextField moneytextField;
+		String month, day;
+		ImageIcon icon;
+		public addbtn() {
+			
+			Font f1 = new Font("맑은 고딕", Font.BOLD, 25);
+			Font f2 = new Font("맑은 고딕", Font.BOLD, 18);
+			Font f3 = new Font("맑은 고딕", Font.BOLD, 16);
+			setTitle("생일 추가창");
+			JPanel AddContainer = new JPanel(){
+				public void paintComponent(Graphics g) {
+					icon = new ImageIcon("C:\\Users\\qkslz\\OneDrive\\바탕 화면\\gui배경화면\\추가1.jpg");
+					g.drawImage(icon.getImage(),0, 0, null);
+					setOpaque(false);
+					super.paintComponent(g);
+				}
+			};
+			setContentPane(AddContainer);
+
+			AddContainer.setBorder(new EmptyBorder(5, 5, 5, 5));
+			AddContainer.setLayout(null);
+
+			JLabel lblNewLabel = new JLabel("\uC0DD\uC77C \uCD94\uAC00");
+			lblNewLabel.setFont(f1);
+			lblNewLabel.setBounds(40, 22, 169, 40);
+			AddContainer.add(lblNewLabel);
+
+			JLabel lblNewLabel_1 = new JLabel("\uB0A0\uC9DC");
+			lblNewLabel_1.setFont(f2);
+			lblNewLabel_1.setBounds(46, 85, 50, 25);
+			AddContainer.add(lblNewLabel_1);
+
+			JComboBox 월콤보 = new JComboBox();
+			월콤보.setModel(new DefaultComboBoxModel(
+					new String[] { "01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12" }));
+			월콤보.setBounds(115, 86, 66, 25);
+			월콤보.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					month = 월콤보.getSelectedItem().toString();
+				}
+			});
+			AddContainer.add(월콤보);
+
+			JComboBox 일콤보 = new JComboBox();
+			일콤보.setModel(new DefaultComboBoxModel(new String[] { "01", "02", "03", "04", "05", "06", "07", "08", "09",
+					"10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25",
+					"26", "27", "28", "29", "30", "31" }));
+			일콤보.setBounds(234, 86, 74, 25);
+			AddContainer.add(일콤보);
+			일콤보.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					day = 일콤보.getSelectedItem().toString();
+				}
+			});
+			// 월
+			JLabel lblNewLabel_2 = new JLabel("\uC6D4");
+			lblNewLabel_2.setFont(f3);
+			lblNewLabel_2.setBounds(192, 90, 50, 15);
+			AddContainer.add(lblNewLabel_2);
+			// 일
+			JLabel lblNewLabel_2_1 = new JLabel("\uC77C");
+			lblNewLabel_2_1.setFont(f3);
+			lblNewLabel_2_1.setBounds(317, 85, 26, 25);
+			AddContainer.add(lblNewLabel_2_1);
+			// 이름
+			JLabel lblNewLabel_1_1 = new JLabel("\uC774\uB984");
+			lblNewLabel_1_1.setFont(f2);
+			lblNewLabel_1_1.setBounds(46, 168, 50, 25);
+			AddContainer.add(lblNewLabel_1_1);
+			// 예상지출금
+			JLabel lblNewLabel_1_2 = new JLabel("\uC608\uC0C1 \uC18C\uBE44 \uAE08\uC561");
+			lblNewLabel_1_2.setFont(f2);
+			lblNewLabel_1_2.setBounds(46, 251, 130, 25);
+			AddContainer.add(lblNewLabel_1_2);
+			// 이름 textField
+			nametextField = new JTextField();
+			nametextField.setBounds(109, 169, 223, 31);
+			AddContainer.add(nametextField);
+			nametextField.setColumns(10);
+			// 예상지출금액 textField
+			moneytextField = new JTextField();
+			moneytextField.setColumns(10);
+			moneytextField.setBounds(192, 252, 140, 31);
+			AddContainer.add(moneytextField);
+
+			JButton 생일추가버튼 = new JButton("\uCD94\uAC00");
+			생일추가버튼.setFont(f3);
+			생일추가버튼.setBounds(83, 320, 98, 31);
+			생일추가버튼.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					inputStr[0] = month + "-" + day;
+					inputStr[1] = nametextField.getText();
+					inputStr[2] = moneytextField.getText();
+					if (Integer.parseInt(month) == nowmonth) {
+						model.addRow(inputStr);
+						sum += Integer.parseInt(inputStr[2]);
+						금액.setText(Integer.toString(sum));
+					}
+					db.birthinsert(nowyear + "-" + inputStr[0], inputStr[1], inputStr[2]);
+					dispose();
+				}
+			});
+			AddContainer.add(생일추가버튼);
+
+			JButton 닫기 = new JButton("\uB2EB\uAE30");
+			닫기.setFont(f3);
+			닫기.setBounds(192, 320, 98, 31);
+			닫기.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					dispose();
+				}
+			});
+			AddContainer.add(닫기);
+			this.setLocation(650, 150);
+			setSize(384, 433);
+			setResizable(false);
+			setVisible(true);
+		}
+	}
+
+	class changebtn extends JFrame {
+		String[] a = new String[3];// 한사람의 정보
+		String[] b = new String[3];//한사람의 수정된 정보
+		String month, day;
+		private JTextField textField;
+		private JTextField textField_1;
+
+		public changebtn(int row) {
+			if (row == -1) {
+				JOptionPane.showMessageDialog(null, "선택된 사항이 없습니다!", "선택사항 check", JOptionPane.INFORMATION_MESSAGE, null);
+				return;
+			}
+			Font f1 = new Font("맑은 고딕", Font.BOLD, 25);
+			Font f2 = new Font("맑은 고딕", Font.BOLD, 18);
+			Font f3 = new Font("맑은 고딕", Font.BOLD, 16);
+			
+			for (int i = 0; i < a.length; i++) {
+				a[i] = data[row][i];
+			}
+			JPanel cPane = new JPanel(){
+				public void paintComponent(Graphics g) {
+					ImageIcon icon;
+					icon = new ImageIcon("C:\\Users\\qkslz\\OneDrive\\바탕 화면\\gui배경화면\\추가1.jpg");
+					g.drawImage(icon.getImage(),0, 0, null);
+					setOpaque(false);
+					super.paintComponent(g);
+				}
+			};
+			cPane.setBorder(new EmptyBorder(5, 5, 5, 5));
+			setContentPane(cPane);
+			cPane.setLayout(null);
+
+			JLabel lblNewLabel = new JLabel("\uC0DD\uC77C \uC218\uC815");
+			lblNewLabel.setFont(new Font("맑은 고딕", Font.BOLD, 25));
+			lblNewLabel.setBounds(39, 23, 169, 40);
+			cPane.add(lblNewLabel);
+
+			JLabel lblNewLabel_1 = new JLabel("\uB0A0\uC9DC");
+			lblNewLabel_1.setFont(new Font("맑은 고딕", Font.PLAIN, 18));
+			lblNewLabel_1.setBounds(46, 160, 50, 25);
+			cPane.add(lblNewLabel_1);
+
+			JComboBox comboBox_1 = new JComboBox();
+			comboBox_1.setModel(new DefaultComboBoxModel(
+					new String[] { "01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12" }));
+			comboBox_1.setBounds(115, 163, 66, 25);
+			comboBox_1.setEnabled(false);
+			comboBox_1.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					month = comboBox_1.getSelectedItem().toString();
+				}
+			});
+			cPane.add(comboBox_1);
+
+			JComboBox comboBox_2 = new JComboBox();
+			comboBox_2.setModel(new DefaultComboBoxModel(new String[] {"01", "02", "03", "04", "05", "06", "07", "08", "09",
+					"10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25",
+					"26", "27", "28", "29", "30", "31" }));
+			comboBox_2.setBounds(217, 163, 74, 25);
+			comboBox_2.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					day = comboBox_2.getSelectedItem().toString();
+				}
+			});
+			comboBox_2.setEnabled(false);
+			cPane.add(comboBox_2);
+
+			JLabel lblNewLabel_2 = new JLabel("\uC6D4");
+			lblNewLabel_2.setFont(new Font("나눔고딕", Font.PLAIN, 15));
+			lblNewLabel_2.setBounds(193, 167, 50, 15);
+			cPane.add(lblNewLabel_2);
+
+			JLabel lblNewLabel_2_1 = new JLabel("\uC77C");
+			lblNewLabel_2_1.setFont(new Font("나눔고딕", Font.PLAIN, 15));
+			lblNewLabel_2_1.setBounds(303, 162, 26, 25);
+			cPane.add(lblNewLabel_2_1);
+
+			JLabel lblNewLabel_1_1 = new JLabel("\uC774\uB984");
+			lblNewLabel_1_1.setFont(new Font("맑은 고딕", Font.PLAIN, 18));
+			lblNewLabel_1_1.setBounds(46, 216, 50, 25);
+			cPane.add(lblNewLabel_1_1);
+
+			JLabel lblNewLabel_1_2 = new JLabel("\uC608\uC0C1 \uC18C\uBE44 \uAE08\uC561");
+			lblNewLabel_1_2.setFont(new Font("맑은 고딕", Font.PLAIN, 18));
+			lblNewLabel_1_2.setBounds(46, 270, 130, 25);
+			cPane.add(lblNewLabel_1_2);
+			//이름 텍스트 필드
+			textField = new JTextField();
+			textField.setBounds(113, 210, 223, 31);
+			textField.setEnabled(false);
+			cPane.add(textField);
+			textField.setColumns(10);
+			//금액 텍스트 필드
+			textField_1 = new JTextField();
+			textField_1.setEnabled(false);
+			textField_1.setColumns(10);
+			textField_1.setBounds(193, 261, 140, 31);
+			cPane.add(textField_1);
+
+			JButton 수정버튼 = new JButton("\uC218\uC815");
+			수정버튼.setFont(f3);
+			수정버튼.setBounds(83, 320, 98, 31);
+			수정버튼.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					db=new DBConnection();
+					if(comboBox_1.isEnabled()&&comboBox_2.isEnabled()) {
+						b[0] = month + "-" +day;
+					}else {b[0]=a[0]; String[] temp = a[0].split("-");
+							month = temp[0];
+					}
+					if(textField.isEnabled()) {
+						b[1] = textField.getText();
+					}else b[1]=a[1];
+					if(textField_1.isEnabled()) {
+						b[2]= textField_1.getText();
+					}else b[2]=a[2];
+					for(int i = 0;i<data[0].length;i++) {
+						data[row][i]=b[i];
+					}
+					if (Integer.parseInt(month) == nowmonth) {
+						model = (DefaultTableModel) table.getModel();
+						model.setValueAt(b[0], row, 0);
+						model.setValueAt(b[1], row, 1);
+						model.setValueAt(b[2], row, 2);
+						sum -= Integer.parseInt(a[2]);
+						sum += Integer.parseInt(b[2]);
+						금액.setText(Integer.toString(sum));
+					}
+					b[0]= nowyear+"-"+b[0];
+					a[0]= nowyear+"-"+a[0];
+					db.birthupdate(a, b);
+					dispose();
+				}
+			});
+			cPane.add(수정버튼);
+			//닫기
+			JButton btnNewButton_1 = new JButton("\uB2EB\uAE30");
+			btnNewButton_1.setFont(f3);
+			btnNewButton_1.setBounds(192, 320, 98, 31);
+			cPane.add(btnNewButton_1);
+			btnNewButton_1.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					dispose();
+				}
+			});
+			JLabel lblNewLabel_3 = new JLabel("\uC218\uC815 \uC0AC\uD56D");
+			lblNewLabel_3.setFont(f3);
+			lblNewLabel_3.setBounds(39, 65, 98, 25);
+			cPane.add(lblNewLabel_3);
+			//날짜
+			JCheckBox daycheck = new JCheckBox("\uB0A0\uC9DC");
+			daycheck.setBounds(39, 94, 66, 23);
+			daycheck.addItemListener(new ItemListener(){
+				public void itemStateChanged(ItemEvent e) {
+					if(e.getStateChange()==ItemEvent.SELECTED) {
+						comboBox_1.setEnabled(true);
+						comboBox_2.setEnabled(true);
+					}else {
+						comboBox_1.setEnabled(false);
+						comboBox_2.setEnabled(false);
+					}
+				}
+			});
+			cPane.add(daycheck);
+			//이름
+			JCheckBox namecheck = new JCheckBox("\uC774\uB984");
+			namecheck.setBounds(127, 94, 66, 23);
+			namecheck.addItemListener(new ItemListener(){
+				public void itemStateChanged(ItemEvent e) {
+					if(e.getStateChange()==ItemEvent.SELECTED) {
+						textField.setEnabled(true);
+					}else {
+						textField.setEnabled(false);
+					}
+				}
+			});
+			cPane.add(namecheck);
+			//금액
+			JCheckBox moneycheck = new JCheckBox("\uAE08\uC561");
+			moneycheck.setBounds(225, 94, 66, 23);
+			moneycheck.addItemListener(new ItemListener(){
+				public void itemStateChanged(ItemEvent e) {
+					if(e.getStateChange()==ItemEvent.SELECTED) {
+						textField_1.setEnabled(true);
+					}else {
+						textField_1.setEnabled(false);
+					}
+				}
+			});
+			cPane.add(moneycheck);
+
+			JLabel 날짜 = new JLabel(a[0]);
+			날짜.setBounds(49, 123, 50, 15);
+			cPane.add(날짜);
+
+			JLabel 이름 = new JLabel(a[1]);
+			이름.setBounds(137, 123, 50, 15);
+			cPane.add(이름);
+
+			JLabel 금액 = new JLabel(a[2]);
+			금액.setBounds(235, 123, 50, 15);
+			cPane.add(금액);
+			
+			
+			this.setLocation(650, 150);
+			setSize(384, 433);
+			setResizable(false);
+			setVisible(true);
+			DBConnection.end();
+		}
+	}
+
+}

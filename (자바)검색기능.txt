@@ -1,0 +1,210 @@
+package 가계부;
+
+import java.awt.BorderLayout;
+import java.awt.EventQueue;
+
+import javax.swing.JFrame;
+import javax.swing.JPanel;
+import javax.swing.border.EmptyBorder;
+import javax.swing.JLabel;
+import java.awt.Font;
+import java.sql.Connection;
+import java.sql.Date;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.time.LocalDate;
+
+import javax.swing.JTextArea;
+import javax.swing.JComboBox;
+import javax.swing.JButton;
+import javax.swing.JTable;
+import javax.swing.JScrollPane;
+import javax.swing.ListSelectionModel;
+import javax.swing.JList;
+import javax.swing.JOptionPane;
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableModel;
+import javax.swing.JToolBar;
+import javax.swing.JScrollBar;
+import javax.swing.ScrollPaneConstants;
+import java.awt.event.ActionListener;
+import java.awt.event.ActionEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+
+public class 검색기능 extends JFrame {
+
+	public static int cnt = 0;
+	DBConnection db;
+	private JPanel 판;
+	private JTable 표;
+
+	String text = "-";
+	String year, month, day;
+	String result;
+
+	String colNames[] = { "지출/수입", "내역", "금액" }; // column name
+	DefaultTableModel model = new DefaultTableModel(colNames, 0); // data 저장
+	String[][] idata; // db 에서 읽어올 데이터
+	String[][] sdata;
+	String[][] alldata;
+	public String inputStr[] = new String[3];
+	// DB 연동
+	Statement sql = null;
+	Connection con = null;
+	PreparedStatement pstmt = null;
+	ResultSet rs = null;
+
+	/**
+	 * Launch the application.
+	 */
+
+	public static void main(String[] args) {
+		EventQueue.invokeLater(new Runnable() {
+			public void run() {
+				try {
+					검색기능 frame = new 검색기능();
+					frame.setVisible(true);
+
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		});
+	}
+
+	/**
+	 * Create the frame.
+	 */
+	public 검색기능() {}
+	public 검색기능(JPanel 판) {
+		db = new DBConnection();
+		JLabel name = new JLabel("\uC9C0\uCD9C & \uC18C\uBE44 검색");
+		name.setBounds(100, 15, 376, 26);
+		name.setFont(new Font("맑은 고딕", Font.BOLD , 19));
+		판.add(name);
+
+		// 년도, 월, 일 구하기
+		JComboBox 년도 = new JComboBox();
+		년도.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				year = 년도.getSelectedItem().toString();
+
+			}
+		});
+		년도.setModel(new DefaultComboBoxModel(new String[] { "2018", "2019", "2020" }));
+		년도.setBounds(50, 63, 89,25);
+		년도.setToolTipText("");
+		판.add(년도);
+		JComboBox 월 = new JComboBox();
+		월.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				month = 월.getSelectedItem().toString();
+
+			}
+		});
+		월.setModel(new DefaultComboBoxModel(
+				new String[] { "01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12" }));
+		월.setBounds(150, 63, 89, 25);
+		판.add(월);
+
+		JComboBox 일 = new JComboBox();
+		일.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				day = 일.getSelectedItem().toString(); // combo 값 가져옴!!
+
+			}
+		});
+
+		일.setModel(new DefaultComboBoxModel(new String[] { "01", "02", "03", "04", "05", "06", "07", "08", "09", "10",
+				"11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27",
+				"28", "29", "30", "31" }));
+		일.setBounds(250, 63, 89, 25);
+		판.add(일);
+
+		JButton 검색 = new JButton("검색");
+
+		검색.setBounds(260, 100, 81, 26);
+		검색.setFont(new Font("맑은 고딕", Font.BOLD, 13));
+		판.add(검색);
+		표 = new JTable(new DefaultTableModel(new Object[][] {},
+				colNames));
+
+		JScrollPane scrollPane = new JScrollPane(표);
+		scrollPane.setBounds(30, 140, 322, 400);
+		판.add(scrollPane);
+
+		scrollPane.setViewportView(표);
+		JScrollBar scrollBar = new JScrollBar();
+		scrollPane.setRowHeaderView(scrollBar);
+		검색.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				DefaultTableModel tmodel = (DefaultTableModel)표.getModel();
+				tmodel.setNumRows(0);
+				result = year + text + month + text + day;
+				int c = 0;
+				idata = db.Isearch(result);
+				sdata = db.Ssearch(result);
+				
+				if (idata[0][0].equals("X") && sdata[0][0].equals("X")) {// 둘 다 없을 때
+					c = 1;
+				} else if (idata[0][0].equals("X")) {// income 검색결과 없을 때
+					c = 2;
+				} else if (sdata[0][0].equals("X")) {// spend 검색결과 없을 떄
+					c = 3;
+				} else {
+					c = 4;
+				} // 둘다 있을 때
+				switch (c) {
+				case 1:// 둘 다없을때
+					JOptionPane.showMessageDialog(null, result + "의 지출/수입 내역은 없습니다.", "검색",
+							JOptionPane.INFORMATION_MESSAGE, null);
+					return;
+					
+				case 2:// income 없을때
+					alldata = new String[sdata.length][3];
+					for (int i = 0; i < sdata.length; i++) {
+						for (int j = 0; j < sdata[0].length; j++) {
+							alldata[i][j] = sdata[i][j];
+						}
+					}
+					break;
+				case 3:// spend 없을때
+					alldata = new String[idata.length][3];
+					for (int i = 0; i < idata.length; i++) {
+						for (int j = 0; j < idata[0].length; j++) {
+							alldata[i][j] = idata[i][j];
+						}
+					}
+					break;
+				case 4: // 둘 다 있을 때
+					alldata = new String[idata.length + sdata.length][3];
+					int i;
+					for (i = 0; i < idata.length; i++) {
+						for (int j = 0; j < 3; j++) {
+							alldata[i][j] = idata[i][j];
+						}
+					}
+					for (; i < idata.length + sdata.length; i++) {
+						for (int j = 0; j < 3; j++) {
+							alldata[i][j] = sdata[i-idata.length][j];
+						}
+					}
+					break;
+
+				}
+				for(int k=0;k<alldata.length;k++) {
+					tmodel.addRow(alldata[k]);
+				}
+				
+
+			}
+
+		});
+	}
+}

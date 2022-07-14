@@ -1,0 +1,530 @@
+package 가계부;
+
+import java.text.SimpleDateFormat;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Date;
+
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Container;
+import java.awt.EventQueue;
+
+import javax.swing.JFrame;
+import javax.swing.JPanel;
+import javax.swing.border.EmptyBorder;
+import javax.swing.table.DefaultTableModel;
+
+import java.awt.FlowLayout;
+import java.awt.Font;
+import java.awt.Graphics;
+import java.awt.GridLayout;
+import java.awt.LayoutManager;
+
+import javax.swing.JTextField;
+import javax.swing.JLabel;
+import javax.swing.SwingConstants;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.ImageIcon;
+
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.Statement;
+import java.awt.event.ItemListener;
+import java.awt.event.ItemEvent;
+import javax.swing.JTextPane;
+
+public class 주월 extends JFrame {
+
+	DBConnection db;
+	public JPanel panel_data;
+	public JLabel 교통;
+	public JLabel 식비;
+	public JLabel 의류;
+	public JLabel 기타;
+	public JLabel 생활;
+	public JLabel 문화;
+	private JTextField txtincome;
+	private JTextField txtspend;
+	private JTextField txtToday;
+	String[][] data; // db에서 읽어올 데이터
+	String[] name = { "의류", "교통비", "기타", "식비" };
+	int totalbus;
+	int totalc;
+	int totalg;
+	int totalf, totam, totas;
+	ImageIcon icon;
+
+	/**
+	 * Launch the application.
+	 */
+	public static void main(String[] args) {
+		EventQueue.invokeLater(new Runnable() {
+			public void run() {
+				try {
+					주월 frame = new 주월();
+					frame.setVisible(true);
+				} catch (Exception e) {
+					e.printStackTrace();
+
+				}
+			}
+		});
+
+	}
+
+	/**
+	 * Create the frame.
+	 */
+	public 주월() {
+	}
+
+	public 주월(JPanel contentPane) {
+		icon = new ImageIcon("C:\\Users\\qkslz\\OneDrive\\바탕 화면\\gui배경화면\\푸른배경.jpg");
+		JPanel panel_menu = new JPanel(){
+			public void paintComponent(Graphics g) {
+				g.drawImage(icon.getImage(),0, 0, null);
+				setOpaque(false);
+				super.paintComponent(g);
+			}
+		};
+		panel_menu.setBounds(0, 50, 400, 40);
+		contentPane.add(panel_menu);
+		panel_menu.setLayout(null);
+
+		JButton btnmonth = new JButton("월별");
+		btnmonth.setFont(new Font("맑은 고딕", Font.PLAIN, 16));
+		btnmonth.setBounds(196, 0, 200, 40);
+		panel_menu.add(btnmonth);
+
+		JButton btnweek = new JButton("주별");
+		btnweek.setFont(new Font("맑은 고딕", Font.PLAIN, 16));
+		btnweek.setBounds(0, 0, 198, 40);
+		panel_menu.add(btnweek);
+
+		panel_data = new JPanel() {
+			public void paintComponent(Graphics g) {
+				ImageIcon icon_1 = new ImageIcon("C:\\Users\\qkslz\\OneDrive\\바탕 화면\\gui배경화면\\graph.jpg");
+				g.drawImage(icon_1.getImage(), 0, 0, null);
+				setOpaque(false);
+				super.paintComponent(g);
+			}
+		};
+		panel_data.setBounds(0, 132, 386, 310);
+		contentPane.add(panel_data);
+		panel_data.setLayout(null);
+
+		교통 = new JLabel();
+		교통.setHorizontalAlignment(SwingConstants.CENTER);
+		교통.setBounds(12, 300, 55, 0);
+		panel_data.add(교통);
+		교통.setOpaque(true);
+		교통.setBackground(Color.pink);
+
+		의류 = new JLabel();
+		의류.setHorizontalAlignment(SwingConstants.CENTER);
+		의류.setBounds(120, 300, 55, 0);
+		panel_data.add(의류);
+		의류.setOpaque(true);
+		의류.setBackground(Color.red);
+
+		식비 = new JLabel();
+		식비.setHorizontalAlignment(SwingConstants.CENTER);
+		식비.setBounds(224, 300, 55, 0);
+		panel_data.add(식비);
+		식비.setOpaque(true);
+		식비.setBackground(Color.green);
+
+		문화 = new JLabel();
+		문화.setHorizontalAlignment(SwingConstants.CENTER);
+		문화.setBounds(12, 300, 55, 0);
+		panel_data.add(문화);
+		문화.setOpaque(true);
+		문화.setBackground(Color.ORANGE);
+
+		생활 = new JLabel();
+		생활.setHorizontalAlignment(SwingConstants.CENTER);
+		생활.setBounds(12, 300, 55, 0);
+		panel_data.add(생활);
+		생활.setOpaque(true);
+		생활.setBackground(Color.yellow);
+
+		기타 = new JLabel();
+		기타.setHorizontalAlignment(SwingConstants.CENTER);
+		기타.setBounds(314, 300, 55, 0);
+		panel_data.add(기타);
+		기타.setOpaque(true);
+		기타.setBackground(Color.blue);
+
+		Font f1 = new Font("맑은 고딕", Font.PLAIN, 15);
+		JLabel lblNewLabel = new JLabel("\uAD50\uD1B5\uBE44");
+		lblNewLabel.setFont(f1);
+		lblNewLabel.setBounds(25, 283, 50, 15);
+		panel_data.add(lblNewLabel);
+
+		JLabel lblNewLabel_1 = new JLabel("의류");
+		lblNewLabel_1.setBounds(90, 283, 50, 15);
+		lblNewLabel_1.setFont(f1);
+		panel_data.add(lblNewLabel_1);
+
+		JLabel lblNewLabel_2 = new JLabel("식비");
+		lblNewLabel_2.setBounds(145, 283, 50, 15);
+		lblNewLabel_2.setFont(f1);
+		panel_data.add(lblNewLabel_2);
+
+		JLabel lblNewLabel_3 = new JLabel("기타");
+		lblNewLabel_3.setBounds(324, 283, 50, 15);
+		lblNewLabel_3.setFont(f1);
+		panel_data.add(lblNewLabel_3);
+
+		JLabel lblNewLabel_2_1 = new JLabel("\uBB38\uD654");
+		lblNewLabel_2_1.setFont(new Font("맑은 고딕", Font.PLAIN, 15));
+		lblNewLabel_2_1.setBounds(202, 283, 50, 15);
+		panel_data.add(lblNewLabel_2_1);
+
+		JLabel lblNewLabel_2_1_1 = new JLabel("\uC0DD\uD65C");
+		lblNewLabel_2_1_1.setFont(new Font("맑은 고딕", Font.PLAIN, 15));
+		lblNewLabel_2_1_1.setBounds(264, 283, 50, 15);
+		panel_data.add(lblNewLabel_2_1_1);
+
+		JPanel panel_result = new JPanel(){
+			public void paintComponent(Graphics g) {
+				g.drawImage(icon.getImage(),0, 0, null);
+				setOpaque(false);
+				super.paintComponent(g);
+			}
+		};
+		panel_result.setBounds(72, 444, 236, 109);
+		contentPane.add(panel_result);
+		panel_result.setLayout(null);
+
+		JLabel lblincome = new JLabel("수입");
+		lblincome.setFont(new Font("맑은 고딕", Font.PLAIN, 18));
+		lblincome.setHorizontalAlignment(SwingConstants.CENTER);
+		lblincome.setBounds(0, 13, 57, 24);
+		panel_result.add(lblincome);
+
+		JLabel lblspend = new JLabel("지출");
+		lblspend.setFont(new Font("맑은 고딕", Font.PLAIN, 18));
+		lblspend.setHorizontalAlignment(SwingConstants.CENTER);
+		lblspend.setBounds(0, 54, 57, 20);
+		panel_result.add(lblspend);
+
+		txtincome = new JTextField(); // 수입 계산한 거 나오는 곳
+		txtincome.setFont(new Font("맑은 고딕", Font.PLAIN, 15));
+		txtincome.setBounds(69, 14, 159, 25);
+		panel_result.add(txtincome);
+		txtincome.setColumns(10);
+
+		txtspend = new JTextField();
+		txtspend.setBounds(69, 56, 159, 25);
+		panel_result.add(txtspend);
+		txtspend.setColumns(10);
+
+		JPanel panel_select = new JPanel(){
+			public void paintComponent(Graphics g) {
+				g.drawImage(icon.getImage(),0, 0, null);
+				setOpaque(false);
+				super.paintComponent(g);
+			}
+		};
+		panel_select.setBounds(0, 93, 386, 29);
+		contentPane.add(panel_select);
+		FlowLayout fl_panel_select = (FlowLayout) panel_select.getLayout();
+		fl_panel_select.setAlignment(FlowLayout.RIGHT);
+
+		JLabel lblNewLabel_4 = new JLabel("\uC8FC / \uC6D4\uBCC4 \uC18C\uBE44 \uBD84\uC11D");
+		lblNewLabel_4.setFont(new Font("맑은 고딕", Font.BOLD, 17));
+		lblNewLabel_4.setBounds(119, 10, 159, 30);
+		contentPane.add(lblNewLabel_4);
+
+		Calendar cal = Calendar.getInstance();
+		int year = cal.get(Calendar.YEAR);
+		int month = cal.get(Calendar.MONTH) + 1;
+		int day = cal.get(Calendar.DAY_OF_MONTH);
+		int whatweek = 0;
+		if (day >= 0 && day <= 8) {
+			whatweek = 1;
+		}
+		if (day >= 8 && day <= 15) {
+			whatweek = 2;
+		}
+		if (day >= 15 && day <= 22) {
+			whatweek = 3;
+		}
+		if (day >= 22 && day <= 31) {
+			whatweek = 4;
+		}
+		String today = "Today is " + year + "-" + month + "-" + day;
+
+		txtToday = new JTextField();
+		txtToday.setText(today);
+		txtToday.setEditable(false);
+		txtToday.setHorizontalAlignment(SwingConstants.CENTER);
+		panel_select.add(txtToday);
+		txtToday.setColumns(15);
+
+		JComboBox comboweek = new JComboBox();
+		comboweek.setModel(new DefaultComboBoxModel(new String[] { "1", "2", "3", "4" }));
+		comboweek.setSelectedIndex(whatweek - 1);
+		panel_select.add(comboweek);
+
+		JComboBox combomonth = new JComboBox();
+		combomonth.setModel(new DefaultComboBoxModel(
+				new String[] { "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12" }));
+		combomonth.setVisible(false);
+		panel_select.add(combomonth);
+		// 주별 아이템 변경하면 실행
+		comboweek.addItemListener(new ItemListener() {
+			public void itemStateChanged(ItemEvent e) {
+				if (e.getStateChange() == 1) {
+					교통.setSize(55, 0);
+					교통.setLocation(12, 300);
+
+					의류.setSize(55, 0);
+					의류.setLocation(120, 300);
+
+					식비.setSize(55, 0);
+					식비.setLocation(224, 300);
+
+					문화.setSize(55, 0);
+					문화.setLocation(314, 300);
+
+					생활.setSize(55, 0);
+					생활.setLocation(314, 300);
+
+					기타.setSize(55, 0);
+					기타.setLocation(314, 300);
+
+					String week = e.getItem().toString();
+					db = new DBConnection();
+					int weekspend = 0;
+					data = db.spendreadweek(week);
+
+					for (int i = 0; i < data.length; i++) {
+						for (int j = 0; j < 3; j++) {
+							System.out.println(data[i][j]);
+						}
+						weekspend += Integer.parseInt(data[i][2]);
+					}
+					System.out.println("총합" + weekspend);
+					String totalSpendtoString = String.format("%,d원", weekspend);
+					txtspend.setText(totalSpendtoString);
+
+					for (int i = 0; i < data.length; i++) {
+						String ct = data[i][1];
+						switch (ct) {
+						case "교통비":
+							totalbus += Integer.parseInt(data[i][2]);
+							break;
+
+						case "의류":
+							totalc += Integer.parseInt(data[i][2]);
+							break;
+
+						case "식비":
+							totalf += Integer.parseInt(data[i][2]);
+							break;
+
+						case "문화":
+							totam += Integer.parseInt(data[i][2]);
+							break;
+
+						case "생활":
+							totas += Integer.parseInt(data[i][2]);
+							break;
+
+						case "기타":
+							totalg += Integer.parseInt(data[i][2]);
+							break;
+						}
+					}
+
+					int[] a = { totalbus, totalc, totalf, totalg, totam, totas };
+					그래프(a);
+					totalbus = 0;
+					totalc = 0;
+					totalg = 0;
+					totalf = 0;
+					totam = 0;
+					totas = 0;
+					data = db.incomereadweek(week);
+					int weekincome = 0;
+					for (int i = 0; i < data.length; i++) {
+						for (int j = 0; j < 3; j++) {
+							System.out.println(data[i][j]);
+						}
+						weekincome += Integer.parseInt(data[i][2]);
+					}
+					System.out.println("총합" + weekspend);
+					String totalincometoString = String.format("%,d원", weekincome);
+					txtincome.setText(totalincometoString);
+				}
+			}
+		});
+
+		combomonth.addItemListener(new ItemListener() {
+			public void itemStateChanged(ItemEvent e) {
+				if (e.getStateChange() == 1) {
+					교통.setSize(55, 0);
+					교통.setLocation(12, 300);
+
+					의류.setSize(55, 0);
+					의류.setLocation(120, 300);
+
+					식비.setSize(55, 0);
+					식비.setLocation(224, 300);
+
+					문화.setSize(55, 0);
+					문화.setLocation(314, 300);
+
+					생활.setSize(55, 0);
+					생활.setLocation(314, 300);
+
+					기타.setSize(55, 0);
+					기타.setLocation(314, 300);
+
+					String month = e.getItem().toString();
+					System.out.println(month);
+					db = new DBConnection();
+					int totalSpend = 0;
+					data = db.spendreadmonth(month);
+					for (int i = 0; i < data.length; i++) {
+						for (int j = 0; j < 3; j++) {
+							System.out.println(data[i][j]);
+						}
+						totalSpend += Integer.parseInt(data[i][2]);
+					}
+					String totalSpendtoString = String.format("%,d원", totalSpend);
+					txtspend.setText(totalSpendtoString);
+
+					for (int i = 0; i < data.length; i++) {
+						String ct = data[i][1];
+						switch (ct) {
+						case "교통비":
+							totalbus += Integer.parseInt(data[i][2]);
+							break;
+
+						case "의류":
+							totalc += Integer.parseInt(data[i][2]);
+							break;
+
+						case "식비":
+							totalf += Integer.parseInt(data[i][2]);
+							break;
+
+						case "문화":
+							totam += Integer.parseInt(data[i][2]);
+							break;
+
+						case "생활":
+							totas += Integer.parseInt(data[i][2]);
+							break;
+
+						case "기타":
+							totalg += Integer.parseInt(data[i][2]);
+							break;
+						}
+					}
+					int[] c = { totalbus, totalc, totalf, totalg, totam, totas };
+					그래프(c);
+					totalbus = 0;
+					totalc = 0;
+					totalg = 0;
+					totalf = 0;
+					totam = 0;
+					totas = 0;
+					db = new DBConnection();
+					int totalIncome = 0;
+					data = db.income(month);
+					for (int i = 0; i < data.length; i++) {
+						for (int j = 0; j < 3; j++) {
+							System.out.println(data[i][j]);
+						}
+						totalIncome += Integer.parseInt(data[i][2]);
+					}
+					String totalIncomeString = String.format("%,d원", totalIncome);
+					txtincome.setText(totalIncomeString);
+
+				}
+			}
+		});
+
+		btnweek.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				combomonth.setVisible(false);
+				comboweek.setVisible(true);
+				교통.setSize(55, 0);
+				교통.setLocation(12, 300);
+				의류.setSize(55, 0);
+				의류.setLocation(120, 300);
+				식비.setSize(55, 0);
+				식비.setLocation(224, 300);
+				문화.setSize(55, 0);
+				문화.setLocation(314, 300);
+				생활.setSize(55, 0);
+				생활.setLocation(314, 300);
+				기타.setSize(55, 0);
+				기타.setLocation(314, 300);
+			}
+		});
+
+		btnmonth.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				combomonth.setVisible(true);
+				comboweek.setVisible(false);
+				교통.setSize(55, 0);
+				교통.setLocation(12, 300);
+				의류.setSize(55, 0);
+				의류.setLocation(120, 300);
+				식비.setSize(55, 0);
+				식비.setLocation(224, 300);
+				문화.setSize(55, 0);
+				문화.setLocation(314, 300);
+				생활.setSize(55, 0);
+				생활.setLocation(314, 300);
+				기타.setSize(55, 0);
+				기타.setLocation(314, 300);
+			}
+		});
+	}
+
+	public void 그래프(int[] a) {
+
+		int[] b = { 0, 0, 0, 0, 0, 0 };
+		for (int i = 0; i < 6; i++) {
+			if (a[i] == 0) {
+				b[i] = 0;
+			} else {
+				b[i] = (a[i] / 1000);
+			}
+		}
+		교통.setSize(55, b[0]);
+		교통.setLocation(15, 280 - b[0]);
+
+		의류.setSize(55, b[1]);
+		의류.setLocation(75, 280 - b[1]);
+
+		식비.setSize(55, b[2]);
+		식비.setLocation(135, 280 - b[2]);
+
+		문화.setSize(55, b[4]);
+		문화.setLocation(195, 280 - b[4]);
+
+		생활.setSize(55, b[5]);
+		생활.setLocation(255, 280 - b[5]);
+
+		기타.setSize(55, b[3]);
+		기타.setLocation(315, 280 - b[3]);
+
+	}
+}

@@ -1,0 +1,572 @@
+package 가계부;
+
+import java.awt.BorderLayout;
+import java.awt.Container;
+import java.awt.EventQueue;
+import java.awt.FlowLayout;
+
+import javax.swing.JFrame;
+import javax.swing.JPanel;
+import javax.swing.JRadioButton;
+import javax.swing.border.EmptyBorder;
+import javax.swing.event.ListSelectionListener;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JOptionPane;
+
+import java.awt.Font;
+import java.awt.Graphics;
+
+import javax.swing.JScrollPane;
+import javax.swing.AbstractAction;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
+
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.sql.Date;
+
+import javax.swing.Action;
+import javax.swing.ImageIcon;
+import javax.swing.JTable;
+import javax.swing.JTextField;
+import javax.swing.table.DefaultTableModel;
+import java.time.LocalDate;
+import java.time.LocalTime;
+
+
+public class 알바 extends JFrame {
+	static Font font = new Font ("맑은고딕",Font.BOLD,13);
+	private JPanel contentPane;
+	private JTable table;
+	private final Action action = new ActionSwing();
+	
+	// JTable 선언
+	public String Str[] = new String[3];
+	String header[] = {"알바 이름", "알바시급", "총 예정 수령 금액"};
+	String contents[][]= {};
+	
+	DefaultTableModel model;
+	
+	// JComboBox 선언
+	JComboBox<String> sthour;
+	JComboBox<String> stmin;
+	JComboBox<String> edhour;
+	JComboBox<String> edmin;
+	JComboBox<String> plshour;
+	JComboBox<String> plsmin;
+	JComboBox<String> plehour;
+	JComboBox<String> plemin;
+	JCheckBox mon;
+	JCheckBox tue;
+	JCheckBox wed;
+	JCheckBox thu;
+	JCheckBox fri;
+	JCheckBox sat;
+	JCheckBox sun;
+	int i = 0;
+	
+	String[] sthour1 = {"00","01","02","03","04","05","06","07","08",
+			"09","10","11","12","13","14","15","16","17",
+			"18","19","20","21","22","23"};
+	
+	String[] edhour1 = {"00","01","02","03","04","05","06","07","08",
+			"09","10","11","12","13","14","15","16","17",
+			"18","19","20","21","22","23"};
+	
+	String[] stmin1 = {"00","01","02","03","04","05","06","07","08",
+			"09","10","11","12","13","14","15","16","17",
+			"18","19","20","21","22","23","24","25","26",
+			"27","28","29","30","31","32","33","34","35",
+			"36","37","38","39","40","41","42","43","44",
+			"45","46","47","48","49","50","51","52","53",
+			"54","55","56","57","58","59"};
+	
+	String[] edmin1 = {"00","01","02","03","04","05","06","07","08",
+			"09","10","11","12","13","14","15","16","17",
+			"18","19","20","21","22","23","24","25","26",
+			"27","28","29","30","31","32","33","34","35",
+			"36","37","38","39","40","41","42","43","44",
+			"45","46","47","48","49","50","51","52","53",
+			"54","55","56","57","58","59"};
+
+	/**
+	 * Launch the application.
+	 */
+	public static void main(String[] args) {
+		EventQueue.invokeLater(new Runnable() {
+			public void run() {
+				try {
+					알바 frame = new 알바();
+					frame.setVisible(true);
+				} catch(Exception e) {
+					e.printStackTrace();
+				}
+			}
+		});
+	}
+	
+	/**
+	 * Create the frame.
+	 */
+	public 알바() {}
+	public 알바(JPanel 알바) {
+
+		JLabel title = new JLabel("\uC54C\uBC14 \uBAA9\uB85D"); // 알바 목록
+		title.setFont(new Font("나눔바른고딕",Font.BOLD,18));
+		title.setBounds(20,24,80,20);
+		알바.add(title);
+		
+		JButton plus = new JButton("\uCD94\uAC00");	// 추가
+		plus.setBounds(120,23,80,25);
+		plus.setFont(new Font("맑은 고딕",Font.BOLD,15));
+		알바.add(plus);
+		
+		JButton minus = new JButton ("\uC0AD\uC81C"); // 삭제
+		minus.setBounds(210,23,80,25);
+		minus.setFont(new Font("맑은 고딕",Font.BOLD,15));
+		알바.add(minus);
+	
+		
+		String contents[][] = {};
+		String we[] = {};
+		int n = 0, m = 0;
+	 	   DBConnection db = new DBConnection();
+	  	  contents =db.parttimeread();
+	  	  String pnum = contents[i][0];
+	  	  we = db.pdayread(pnum);
+	  	   for (int i = 0; i < contents.length; i++) {
+	  		  contents[i][0] = contents[i][1];
+	  		  int 시급 = Integer.valueOf(contents[i][2]);
+	  		  contents[i][1] = contents[i][2];
+	  		  for(int j = 0; j < 7; j++) {
+	  			  if(Integer.valueOf(we[j]) == 1) n++;
+	  		  }
+	  		String [] 일반시간 = contents[i][3].split(":"); 
+	  		String [] 추가근무 = contents[i][4].split(":"); 
+	  		String [] 야간근무 = contents[i][5].split(":");
+	  		m = 시급 * Integer.valueOf(일반시간[0]) * n * 4;
+	  		m += 시급 * Integer.valueOf(추가근무[0]);
+	  		m += 시급 * Integer.valueOf(야간근무[0]);
+	  		  contents[i][2] = String.valueOf(m);
+	 		}
+	   	   DBConnection.end();
+		
+		model = new DefaultTableModel(contents, header);
+		table = new JTable(model);
+		JScrollPane scrollPane = new JScrollPane(table);
+		
+		JPanel panel = new JPanel();
+		panel.setLayout(null);
+		
+		scrollPane.setLocation(0,70);
+		scrollPane.setSize(400,560);
+		
+		알바.add(scrollPane);
+		
+		table.setToolTipText("");
+		table.setFont(new Font("맑은 고딕",Font.BOLD,17));
+		
+		plus.addActionListener((ActionListener) new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				new Pluspage();	// 추가 페이지로 넘어간다.
+			}
+			
+		});
+
+		
+		minus.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+                int choice = JOptionPane.showConfirmDialog(contentPane, "정말 삭제 하시겠습니까?", "종료", JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE);
+
+                if(choice==JOptionPane.YES_OPTION) {
+
+                   if(table.getSelectedRow()==-1) {return;}
+
+                   else {
+                  	   String i = String.valueOf(table.getSelectedRow() + 1);
+                	   DBConnection db = new DBConnection();
+                	   db.Deleteparttime(i);
+                	   model.removeRow(table.getSelectedRow());
+                 	  	DBConnection.end();
+                	   }
+
+                   JOptionPane.showMessageDialog(contentPane,"삭제 되었습니다.");
+
+                   }         
+
+			}
+		});
+		
+		
+	}
+	class Pluspage2 extends JFrame {
+
+		public Pluspage2() {
+			this.setLocation(650, 150);
+			Font font1 = new Font("맑은 고딕",Font.BOLD,14);
+			setTitle("추가근무시간");
+			JPanel a = new JPanel();
+			setContentPane(a);
+			JLabel b = new JLabel("시간"); // 이름
+			b.setFont(font1);
+			setSize(400,150);
+			setResizable(false);
+			setVisible(true);
+			
+			contentPane = new JPanel(){
+				public void paintComponent(Graphics g) {
+					ImageIcon icon;
+					icon = new ImageIcon("C:\\Users\\qkslz\\OneDrive\\바탕 화면\\gui배경화면\\추가근무.jpg");
+					g.drawImage(icon.getImage(),0, 0, null);
+					setOpaque(false);
+					super.paintComponent(g);
+				}
+			};
+			contentPane.setBorder(new EmptyBorder(5,5,5,5));
+			setContentPane(contentPane);
+			contentPane.setLayout(null);
+			
+			JLabel dot = new JLabel("~");	// ~ 표시
+			dot.setBounds(200,25,50,30);
+			
+			plshour = new JComboBox<String> (sthour1);
+			plshour.setBounds(60,25,50,30);
+			
+			plsmin = new JComboBox<String> (stmin1);
+			plsmin.setBounds(120,25,50,30);
+			
+			plehour = new JComboBox<String> (edhour1);
+			plehour.setBounds(240,25,50,30);
+			
+			plemin = new JComboBox<String> (edmin1);
+			plemin.setBounds(300,25,50,30);
+			
+			
+			contentPane.add(plshour);
+			contentPane.add(plsmin);
+			contentPane.add(dot);
+			contentPane.add(plehour);
+			contentPane.add(plemin);
+			
+			JButton d = new JButton("저장");
+			d.setSize(100,30);
+			d.setLocation(250,60);	//추가근무 저장
+			
+			b.setSize(50,30);
+			b.setLocation(20,25);	//시간라벨 저장
+
+			contentPane.add(d);
+			contentPane.add(b);
+			
+			d.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					추가근무();
+					dispose();
+				}
+			});
+		}
+	}
+	class Pluspage extends JFrame {
+		public Pluspage() {
+			this.setLocation(650, 150);
+			Font font2 = new Font("맑은 고딕",Font.BOLD,20);
+			Font font1 = new Font("맑은 고딕",Font.BOLD,14);
+			setTitle("알바 입력 추가창");
+			JPanel plusContainer = new JPanel();
+			setContentPane(plusContainer);
+			JLabel JL1 = new JLabel("\uC774\uB984"); // 이름
+			JL1.setFont(font1);
+			
+			plusContainer.add(JL1);
+			setSize(400,500);
+			setResizable(false);
+			setVisible(true);
+			
+			contentPane = new JPanel(){
+				public void paintComponent(Graphics g) {
+					ImageIcon icon;
+					icon = new ImageIcon("C:\\Users\\qkslz\\OneDrive\\바탕 화면\\gui배경화면\\알바추가.jpg");
+					g.drawImage(icon.getImage(),0, 0, null);
+					setOpaque(false);
+					super.paintComponent(g);
+				}
+			};
+			contentPane.setBorder(new EmptyBorder(5,5,5,5));
+			setContentPane(contentPane);
+			contentPane.setLayout(null);
+			
+			JLabel name = new JLabel("\uC774\uB984");	// 이름
+			JLabel money = new JLabel("\uC2DC\uAE09");	// 시급
+			JLabel time = new JLabel("\uC2DC\uAC04");	// 시간
+			JLabel day = new JLabel("\uC694\uC77C\uC120\uD0DD");	// 요일 선택
+			JLabel answer = new JLabel("\uC54C\uBC14 \uC785\uB825");	// 알바 입력 타이틀
+			
+			name.setFont(font2); name.setBounds(40,80, 120,30);
+			money.setFont(font2); money.setBounds(40,130, 120, 30);
+			time.setFont(font2); time.setBounds(40,180,120,30);
+			day.setFont(font2); day.setBounds(40,270,120,30);
+			answer.setFont(font2); answer.setBounds(150,20,120,30);
+			
+			contentPane.add(name);
+			contentPane.add(money);
+			contentPane.add(time);
+			contentPane.add(day);
+			contentPane.add(answer);
+			
+			JTextField na = new JTextField(20);	// 이름을 적는 칸
+			na.setBounds(100,80,240,35);
+			contentPane.add(na);
+			
+			JTextField mo = new JTextField(1000000000);	// 시급을 적는 칸
+			mo.setBounds(100,130,240,35);
+			contentPane.add(mo);
+			
+			// 체크 박스 (day)
+			
+			setLayout(null);
+			
+			mon = new JCheckBox("\uC6D4",false);
+			tue = new JCheckBox("\uD654",false);
+			wed = new JCheckBox("\uC218",false);
+			thu = new JCheckBox("\uBAA9",false);
+			fri = new JCheckBox("\uAE08",false);
+			sat = new JCheckBox("\uD1A0",false);
+			sun = new JCheckBox("\uC77C",false);
+			
+			// 위치 및 사이즈
+			mon.setSize(40,20);
+			mon.setLocation(30,320);	//월요일
+			
+			tue.setSize(40,20);
+			tue.setLocation(70,320);	//화요일
+			
+			wed.setSize(40,20);
+			wed.setLocation(120,320);	//수요일
+			
+			thu.setSize(40,20);
+			thu.setLocation(170,320);	//목요일
+			
+			fri.setSize(40,20);
+			fri.setLocation(220,320);	//금요일
+			
+			sat.setSize(40,20);
+			sat.setLocation(270,320);	//토요일
+			
+			sun.setSize(40,20);
+			sun.setLocation(320,320);	//일요일
+			
+			add(mon);
+			add(tue);
+			add(wed);
+			add(thu);
+			add(fri);
+			add(sat);
+			add(sun);
+			// 콤보 박스 (time)
+			
+			JLabel dot = new JLabel("~");	// ~ 표시
+			dot.setBounds(180,220,50,30);
+			
+			sthour = new JComboBox<String> (sthour1);
+			sthour.setBounds(40,220,50,30);
+			
+			stmin = new JComboBox<String> (stmin1);
+			stmin.setBounds(100,220,50,30);
+			
+			edhour = new JComboBox<String> (edhour1);
+			edhour.setBounds(220,220,50,30);
+			
+			edmin = new JComboBox<String> (edmin1);
+			edmin.setBounds(280,220,50,30);
+			
+			
+			
+			add(sthour);
+			add(stmin);
+			contentPane.add(dot);
+			add(edhour);
+			add(edmin);
+			
+			// 확인 버튼
+			JButton okbt = new JButton("\uD655\uC778");	// 확인 버튼
+			okbt.setFont(new Font("맑은 고딕",Font.PLAIN,18));
+			okbt.setBounds(150,390,100,40);
+			contentPane.add(okbt);
+			
+			//추가근무 버튼
+			JButton plus = new JButton("추가근무");	// 확인 버튼
+			plus.setFont(new Font("맑은 고딕",Font.PLAIN,11));
+			plus.setBounds(40,350,160,30);
+			contentPane.add(plus);
+			
+			// 취소 버튼
+			JButton nobt = new JButton("\uCDE8\uC18C");	// 취소 버튼
+			nobt.setFont(new Font("맑은 고딕",Font.PLAIN,18));
+			nobt.setBounds(260,390,100,40);
+			contentPane.add(nobt);
+			
+			nobt.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					if (e.getSource()==nobt)
+						dispose();
+				}
+			});
+			
+			okbt.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					
+					String Pname = na.getText();
+					String money = mo.getText(); //얘임
+					
+					int t = sthour.getSelectedIndex();
+					String start = sthour1[t];
+					int s = Integer.valueOf(start);
+					t = stmin.getSelectedIndex();
+					start += ":" + stmin1[t] +":00";
+					
+					t = edhour.getSelectedIndex();
+					String end = edhour1[t];
+					int en = Integer.valueOf(end);
+					t = edmin.getSelectedIndex();
+					end += ":" + edmin1[t] +":00";
+					if(s < en) s = en - s;
+					else {
+						s = 24 - s;
+						s += en;
+					}
+					boolean [] b = { mon.isSelected(), tue.isSelected(), wed.isSelected(), thu.isSelected(), fri.isSelected(), sat.isSelected(), sun.isSelected() };
+					int c = 0;
+					for(int i  =0; i < 7; i++) {
+						if(b[i]) c++;
+					}
+					String 돈 = String.valueOf(Integer.valueOf(money) * s * c * 4);
+					Str[0] = na.getText();
+					Str[1] = mo.getText();
+					Str[2] = 돈;
+					model.addRow(Str);
+					
+					LocalDate n = LocalDate.now();
+					String now = String.valueOf(n);
+					
+					DB알바(Pname, money, start, end, now, b);
+					dispose();
+					i++;
+				}
+			});
+			
+			plus.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					new Pluspage2();	// 추가 페이지로 넘어간다.
+				}
+			});
+		}
+	}
+	
+	private class ActionSwing extends AbstractAction {
+		public ActionSwing() {
+			putValue(NAME,"SwingAction");
+			putValue(SHORT_DESCRIPTION, "Some short description");
+		}
+		public void actionPerformed(ActionEvent e) {
+			
+	}
+}
+	public void DB알바(String name, String money, String startTime,String endTime, String now , boolean b[]) {
+		DBConnection db = new DBConnection();
+		db.DB_PARTTIMEinsert(name, money, startTime, endTime, now, b);
+		System.out.println(startTime +"    "+ endTime);
+	}
+	public void 추가근무() {
+		DBConnection db = new DBConnection();
+ 	   String i = String.valueOf(table.getSelectedRow() + 1);
+		int t = plshour.getSelectedIndex();
+		String start = sthour1[t];
+		t = plsmin.getSelectedIndex();
+		start += ":" + stmin1[t] +":00";
+		LocalTime startTime =  LocalTime.parse(start);
+		
+		t = plehour.getSelectedIndex();
+		String end = edhour1[t];
+		t = plemin.getSelectedIndex();
+		end += ":" + edmin1[t] +":00"; 
+		LocalTime endTime =  LocalTime.parse(end); //얘임
+		int s, e, ni = 22, nie = 6, all = 24;
+		s = startTime.getHour();
+		e = endTime.getHour();
+		String nighttime = "0";
+		String addtime = "0";
+		if(s >= 22 && e <= 6) {
+			nighttime = String.valueOf(e + 2);
+		}
+		else if(s >= 22 && e > 6) {
+			nighttime = String.valueOf(8);
+			addtime = String.valueOf(e - 6);
+		}
+		else if(s >= 0 && e <= 6 && s < 6) {
+			nighttime = String.valueOf(e);
+		}
+		else if(s >=0 && e > 6 && s < 6 ) {
+			nighttime = String.valueOf(6 - s);
+			addtime = String.valueOf(e - 6);
+		}
+		else if(s >= 6 && e <= 22 && s < e) {
+			addtime = String.valueOf(e - s);
+		}
+		else if(s >= 6 && e > 22 || e <= 6) {
+			if(e >22) {nighttime = String.valueOf(24 - e);}
+			else {
+				nighttime = String.valueOf(e);
+			}
+			addtime = String.valueOf(22 - s);
+		}
+		else if (s <=22 &&(e > 22 || e <= 6)) {
+			if(e >22) {nighttime = String.valueOf(24 - e);}
+			else {
+				nighttime = String.valueOf(e);
+			}
+			addtime = String.valueOf(22 - s);
+		}
+		else if(s <22 && e > 6) {
+			nighttime = String.valueOf(8);
+			addtime = String.valueOf(22 - s+ (e - 6));
+		}
+		else {
+			addtime = String.valueOf(e- s);
+		}
+		int night = Integer.valueOf(nighttime);
+		int add = Integer.valueOf(addtime);
+
+		nighttime  = nighttime + ":00:00";
+		addtime = addtime + ":00:00";
+
+		String[][] contents = db.parttimeread();
+		String [] we = db.pdayread(i);
+		int ii = table.getSelectedRow();
+		int n = 0, m = 0;
+	  	int 시급 = Integer.valueOf(contents[ii][2]);
+	  	for(int j = 0; j < 7; j++) {
+	  		if(Integer.valueOf(we[j]) == 1) n++;
+	  	}
+	  	String [] 일반시간 = contents[ii][3].split(":"); 
+	  	String [] 야간시간 = contents[ii][5].split(":"); 
+	  	String [] 추가시간 = contents[ii][4].split(":"); 
+	  	m = 시급 * Integer.valueOf(일반시간[0]) * n * 4;
+	  	m += 시급 * Integer.valueOf(야간시간[0]) * 1.5;
+	  	m += 시급 * Integer.valueOf(추가시간[0]) * 1.5;
+	  	m += 시급* 1.5 * night;
+	  	m += 시급 * add;
+	  	table.setValueAt(m, table.getSelectedRow(), 2);
+	   	   
+		db.Updatenightparttime(i, nighttime);
+		db.Updateaddtime(i, addtime);
+	}
+	
+}

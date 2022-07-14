@@ -1,0 +1,301 @@
+package 가계부;
+
+import java.awt.BorderLayout;
+
+import java.awt.EventQueue;
+
+import javax.swing.JFrame;
+
+import javax.swing.JPanel;
+
+import javax.swing.border.EmptyBorder;
+
+import javax.swing.JLabel;
+
+import java.awt.Font;
+import java.awt.Graphics;
+
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JMenu;
+
+import javax.swing.JOptionPane;
+
+import javax.swing.JScrollPane;
+
+import javax.swing.AbstractAction;
+
+import java.awt.event.ActionEvent;
+
+import java.awt.event.ActionListener;
+import java.sql.Date;
+import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+
+import javax.swing.Action;
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.ImageIcon;
+
+import java.awt.List;
+
+import java.awt.Choice;
+
+import javax.swing.JTable;
+
+import javax.swing.JTextArea;
+
+import javax.swing.JTextField;
+
+import javax.swing.table.DefaultTableModel;
+
+import javax.swing.JDesktopPane;
+
+import java.awt.Component;
+
+import javax.swing.JLayeredPane;
+
+public class 고정지출 extends JFrame {
+
+	static Font font = new Font("나눔바른고딕", Font.BOLD, 17);
+
+	private JPanel contentPane;
+
+	private final Action action = new SwingAction();
+
+	private JTable table;
+
+	public String inputStr[] = new String[3];
+
+	String header[] = { "날짜", "항목", "금액" };
+
+	String contents[][];
+
+	DefaultTableModel model;
+	ImageIcon icon;
+	int nowyear,nowmon;
+	public String data[][];
+
+	/**
+	 * 
+	 * Launch the application.
+	 * 
+	 */
+
+	public static void main(String[] args) {
+		EventQueue.invokeLater(new Runnable() {
+			public void run() {
+				try {
+
+					고정지출 frame = new 고정지출();
+					frame.setVisible(true);
+
+				} catch (Exception e) {
+
+					e.printStackTrace();
+
+				}
+			}
+		});
+	}
+
+	public 고정지출() {
+	}
+
+	public 고정지출(JPanel contentPane) {
+		long time = System.currentTimeMillis();
+		SimpleDateFormat dayTime = new SimpleDateFormat("YYYY");
+		nowyear = Integer.parseInt(dayTime.format(new Date(time)));
+		dayTime = new SimpleDateFormat("MM");
+		nowmon = Integer.parseInt(dayTime.format(new Date(time)));
+		JLabel day = new JLabel("\uACE0\uC815 \uC9C0\uCD9C \uBAA9\uB85D");
+		day.setFont(new Font("나눔바른고딕", Font.BOLD, 23));
+		day.setBounds(25, 39, 228, 41);
+		contentPane.add(day);
+
+		JButton Add1 = new JButton("\uCD94\uAC00");
+		Add1.setFont(font);
+		Add1.setBounds(137, 104, 101, 29);
+		contentPane.add(Add1);
+
+		JButton Delete1 = new JButton("\uC0AD\uC81C");
+		Delete1.setFont(font);
+		Delete1.setBounds(250, 104, 101, 29);
+		contentPane.add(Delete1);
+
+		DBConnection db = new DBConnection();
+		contents = db.Eread();
+		String [][] eday = new String[contents.length][3];
+		for (int i = 0; i < contents.length; i++) {
+			contents[i][0] = contents[i][0].substring(5);// (월&일)만 추출
+			eday[i][0]=contents[i][0].substring(3)+"일";
+			eday[i][1]= contents[i][1];
+			eday[i][2] = contents[i][2];
+		}
+		DBConnection.end();
+
+		model = new DefaultTableModel(eday, header);
+		table = new JTable(model);
+		JScrollPane scrollpane = new JScrollPane(table);
+		JPanel panel = new JPanel();
+		panel.setLayout(null);
+		scrollpane.setBounds(25, 143, 329, 334);
+
+		contentPane.add(scrollpane);
+		table.setToolTipText("");
+		table.setFont(new Font("나눔고딕", Font.PLAIN, 16));
+		Add1.addActionListener((ActionListener) new ActionListener() {
+			@Override
+
+			public void actionPerformed(ActionEvent e) {
+
+				new AddPage();
+
+			}
+
+		});
+
+		Delete1.addActionListener(new ActionListener() {
+
+			@Override
+
+			public void actionPerformed(ActionEvent e) {
+
+				int choice = JOptionPane.showConfirmDialog(contentPane, "정말 삭제 하시겠습니까?", "종료",
+						JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE);
+
+				if (choice == JOptionPane.YES_OPTION) {
+
+					if (table.getSelectedRow() == -1) {
+						return;
+					}
+
+					else {
+						inputStr[0]= contents[table.getSelectedRow()][0];
+						inputStr[1]=contents[table.getSelectedRow()][1];
+						inputStr[2] = contents[table.getSelectedRow()][2];
+						model.removeRow(table.getSelectedRow());
+						DBConnection db = new DBConnection();
+						DBConnection.deletespend(nowyear+"-"+inputStr[0], inputStr[1], inputStr[2]);
+						DBConnection.end();
+					}
+
+					JOptionPane.showMessageDialog(contentPane, "삭제 되었습니다.");
+
+				}
+
+			}
+
+		});
+
+	}
+
+	class AddPage extends JFrame {
+
+		public AddPage() {
+			Font font2 = new Font("맑은 고딕", Font.BOLD, 20);
+			setTitle("고정지출금액 추가창");
+			JPanel AddContainer = new JPanel();
+			setContentPane(AddContainer);
+			JLabel newL = new JLabel("\uC774\uB984");
+			newL.setFont(font);
+
+			AddContainer.add(newL);
+			setSize(384, 433);
+			setResizable(false);
+			setVisible(true);
+			this.setLocation(650, 150);
+			contentPane = new JPanel(){
+				public void paintComponent(Graphics g) {
+					icon = new ImageIcon("C:\\Users\\qkslz\\OneDrive\\바탕 화면\\gui배경화면\\추가1.jpg");
+					g.drawImage(icon.getImage(),0, 0, null);
+					setOpaque(false);
+					super.paintComponent(g);
+				}
+			};
+			contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
+			setContentPane(contentPane);
+			contentPane.setLayout(null);
+
+			JLabel day = new JLabel("\uACE0\uC815\uC9C0\uCD9C\uC77C");
+			JLabel cate = new JLabel("\uD56D\uBAA9");
+			JLabel money = new JLabel("\uAE08\uC561");
+
+			// 폰트, 위치설정
+
+			day.setFont(font2);
+			day.setBounds(22, 59, 120, 39);
+			cate.setFont(font2);
+			cate.setBounds(78, 136, 48, 39);
+			money.setFont(font2);
+			money.setBounds(78, 219, 57, 39);
+
+			contentPane.add(day);
+			contentPane.add(cate);
+			contentPane.add(money);
+			JComboBox 날짜 = new JComboBox();
+			날짜.setModel(new DefaultComboBoxModel(new String[] { "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12","13","14","15","16","17","18","19","20","21","22","23","24","25","26","27","28","29","30","31" }));
+			날짜.setBounds(138, 59, 100, 35);
+			contentPane.add(날짜);
+			JLabel 일 = new JLabel("일");
+			일.setFont(font2);
+			일.setBounds(244, 59, 20, 39);
+			contentPane.add(일);
+			JTextField c = new JTextField(20);// 항목
+			c.setBounds(138, 140, 190, 35);
+			contentPane.add(c);
+
+			JTextField m = new JTextField(1000000000);// money
+			m.setBounds(138, 223, 190, 35);
+			contentPane.add(m);
+
+			JButton addbtn = new JButton("\uCD94\uAC00");
+			addbtn.setFont(new Font("돋움", Font.PLAIN, 18));
+			addbtn.setBounds(139, 307, 105, 31);
+			contentPane.add(addbtn);
+			addbtn.addActionListener(new ActionListener() {
+
+				@Override
+
+				public void actionPerformed(ActionEvent e) {
+
+					inputStr[0] = nowyear+"-"+nowmon+"-"+날짜.getSelectedItem().toString();
+					inputStr[1] = c.getText();
+					inputStr[2] = m.getText();
+					int aq = Integer.parseInt(inputStr[2]);
+					삽입();
+					inputStr[0]= inputStr[0].substring(8)+"일";
+					model.addRow(inputStr);
+					dispose();
+				}
+
+			});
+		}
+
+		public void 삽입()
+
+		{
+			int aq = Integer.parseInt(inputStr[2]);
+			DBConnection db = new DBConnection();
+			db.Eventinsert(inputStr[0], inputStr[1], aq);
+			DBConnection.end();
+		}
+
+	}
+
+	private class SwingAction extends AbstractAction {
+
+		public SwingAction() {
+
+			putValue(NAME, "SwingAction");
+
+			putValue(SHORT_DESCRIPTION, "Some short description");
+
+		}
+
+		public void actionPerformed(ActionEvent e) {
+
+		}
+
+	}
+
+}
